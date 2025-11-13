@@ -1,0 +1,14 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+
+# API keys and secrets
+*secret*
+*key*
+*token*
