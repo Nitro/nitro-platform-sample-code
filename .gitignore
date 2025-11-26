@@ -4,11 +4,15 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 
 # OS
 .DS_Store
 
-# API keys and secrets
-*secret*
-*key*
-*token*
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,55 @@
+version: '3'
+
+tasks:
+  smart-redact:
+    desc: "Smart redact PII from a document (e.g., task smart-redact INPUT=resume.pdf OUTPUT=redacted.pdf)"
+    cmds:
+      - python smart_redact_pii.py {{.INPUT}} {{.OUTPUT}}
+    requires:
+      vars: [INPUT, OUTPUT]
+
+  convert:
+    desc: "Convert document from CLI (e.g., task convert INPUT=doc.docx OUTPUT=doc.pdf FORMAT=pdf)"
+    cmds:
+      - python convert_cli.py {{.INPUT}} {{.OUTPUT}} {{.FORMAT}}
+    requires:
+      vars: [INPUT, OUTPUT, FORMAT]
+
+  batch:
+    desc: "Batch process documents (e.g., task batch INPUT_DIR=./docs OUTPUT_DIR=./output FORMAT=pdf PATTERN='*.docx')"
+    cmds:
+      - python batch_process.py "{{.INPUT_DIR}}" "{{.OUTPUT_DIR}}" {{.FORMAT}} "{{.PATTERN | default "*"}}"
+    requires:
+      vars: [INPUT_DIR, OUTPUT_DIR, FORMAT]
+
+  extract:
+    desc: "Extract forms or tables from PDF (e.g., task extract MODE=forms INPUT=form.pdf OUTPUT=data.json)"
+    cmds:
+      - python extract_data.py {{.MODE}} "{{.INPUT}}" "{{.OUTPUT}}"
+    requires:
+      vars: [MODE, INPUT, OUTPUT]
+
+  password-protect:
+    desc: "Bulk password protect PDFs (e.g., task password-protect INPUT_DIR=./pdfs OUTPUT_DIR=./protected PASSWORD=secret123)"
+    cmds:
+      - python bulk_password_protect.py "{{.INPUT_DIR}}" "{{.OUTPUT_DIR}}" "{{.PASSWORD}}"
+    requires:
+      vars: [INPUT_DIR, OUTPUT_DIR, PASSWORD]
+
+  redact-keyword:
+    desc: "Redact by keyword search (e.g., task redact-keyword INPUT=doc.pdf OUTPUT=redacted.pdf KEYWORDS='confidential secret')"
+    cmds:
+      - python redact_by_keyword.py {{.INPUT}} {{.OUTPUT}} {{.KEYWORDS}}
+    requires:
+      vars: [INPUT, OUTPUT, KEYWORDS]
+
+  install:
+    desc: "Install Python dependencies"
+    cmds:
+      - pip install -r requirements.txt
+
+  setup:
+    desc: "Setup environment (copy .env.example to .env)"
+    cmds:
+      - cp .env.example .env
+      - echo "✅ Created .env file - please update with your credentials"

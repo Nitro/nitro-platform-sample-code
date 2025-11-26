@@ -1,0 +1,13 @@
+# Environment
+.env
+
+# Temporary test files and outputs
+temp/
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
