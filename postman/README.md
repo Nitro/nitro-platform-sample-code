@@ -56,6 +56,14 @@ Many endpoints require file uploads. In Postman:
 3. Change type to **File**
 4. Select your document
 
+**Sample Files**: The repository includes sample files in the `test_files/` folder at the root level that you can use for testing:
+- `Analysis.docx` - Word document
+- `Feedback.xlsx` - Excel spreadsheet
+- `SamplePPTX.pptx` - PowerPoint presentation
+- `SampleResume.pdf` - PDF with text and PII
+- `Sample Tables.pdf` - PDF with tables
+- `BOB - Student-Loan-Application-Form.pdf` - PDF with form fields
+
 ## Async Operations
 
 Some operations return a job ID for async processing:
