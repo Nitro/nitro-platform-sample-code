@@ -8,6 +8,11 @@ __pycache__/
 # OS
 .DS_Store
 
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 # API keys and secrets
 *secret*
 *key*
