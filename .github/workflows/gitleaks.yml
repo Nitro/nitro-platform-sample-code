@@ -1,0 +1,13 @@
+name: Gitleaks
+
+on: [push,pull_request]
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: gitleaks-action
+      uses: Nitro/gitleaks-action@master
+      # This uses our fork of the action
+      
