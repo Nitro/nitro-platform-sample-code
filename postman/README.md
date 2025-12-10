@@ -11,15 +11,18 @@ This folder contains the Postman collection for the Nitro Platform API with exam
 3. Select `Platform-API.postman_collection.json`
 4. The collection will appear in your workspace
 
-### 2. Configure Environment Variables
+### 2. Configure Collection Variables
 
-Create a new environment in Postman with these variables:
+1. Click on the collection name in the sidebar
+2. Go to the **Variables** tab
+3. Set the **CURRENT VALUE** for these variables:
 
-| Postman Variable | Python .env Variable | Description | Example Value |
-|------------------|---------------------|-------------|---------------|
-| `baseUrl` | `PLATFORM_BASE_URL` | API base URL | `https://api.gonitro.dev` |
-| `clientID` | `PLATFORM_CLIENT_ID` | Your client ID | `your-client-id` |
-| `clientSecret` | `PLATFORM_CLIENT_SECRET` | Your client secret | `your-client-secret` |
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `baseUrl` | API base URL | `https://api.gonitro.dev` |
+| `clientID` | Your client ID | `your-client-id` |
+| `clientSecret` | Your client secret | `your-client-secret` |
+| `repoPath` | Absolute path to this repo | `/Users/you/github/nitro-platform-integrations` |
 | `token` | (auto-populated) | Bearer token | `eyJ0eXAiOiJKV1Q...` |
 
 **Note**: If you're also using the Python samples, you can use the same credential values from your `.env` file - just use the Postman variable names shown above.
@@ -41,7 +44,16 @@ The collection is organized into folders:
 - **Transformations**: Modify PDFs (compress, merge, split, etc.)
 - **Jobs**: Check status and get results for async operations
 
-## Example Workflow
+To run them:
+1. Select any request (e.g., **Word → PDF**)
+2. Go to **Body** tab → **form-data**
+3. **Manually select the file** using the file picker:
+   - Click on the file field
+   - Navigate to your `repoPath` folder
+   - Select the appropriate file from the [File Reference Guide](#file-reference-guide) below
+4. Click **Send**
+
+### Example Workflow
 
 1. **Get Token**: Run "Get Bearer Token" request
 2. **Convert Document**: Use "Word → PDF" with a sample .docx file
@@ -78,3 +90,62 @@ To get your API credentials:
 2. Navigate to **Settings** → **API**
 3. Click **Create Application**
 4. Name your application and save the Client ID and Client Secret
+
+## Test Files Reference
+
+When testing endpoints in Postman, use these test files for each operation:
+
+### Conversions
+
+| Endpoint | Test File | Location |
+|----------|-----------|----------|
+| Word → PDF | Analysis.docx | `test_files/test-batch/Analysis.docx` |
+| Excel → PDF | Feedback.xlsx | `test_files/test-batch/Feedback.xlsx` |
+| PowerPoint → PDF | SamplePPTX.pptx | `test_files/SamplePPTX.pptx` |
+| Image → PDF | GoNitro.png | `test_files/GoNitro.png` |
+| PDF → Word | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| PDF → Excel | Sample Tables.pdf | `test_files/test-pdfs/Sample Tables.pdf` |
+| PDF → Image | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+
+### Extractions
+
+| Endpoint | Test File | Location |
+|----------|-----------|----------|
+| Extract PDF Text | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Extract PDF Form Data | BOB - Student-Loan-Application-Form.pdf | `test_files/test-pdfs/BOB - Student-Loan-Application-Form.pdf` |
+| Extract PDF Table Data | Sample Tables.pdf | `test_files/test-pdfs/Sample Tables.pdf` |
+| Extract and Autodetect Bounding Boxes for PII | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Extract Bounding Boxes for Strings | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Get PDF Properties | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Set PDF Properties | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+
+### Transformations
+
+| Endpoint | Test File | Location |
+|----------|-----------|----------|
+| Redact Bounding boxes (scrub PII) | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Compress | BOB - Student-Loan-Application-Form.pdf | `test_files/test-pdfs/BOB - Student-Loan-Application-Form.pdf` |
+| Flatten | Sample Tables.pdf | `test_files/test-pdfs/Sample Tables.pdf` |
+| Rotate Pages | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Delete Pages | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Split | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Merge | Sample Tables.pdf + SampleResume.pdf | `test_files/test-pdfs/` (multiple files) |
+| Password Protect | SampleResume.pdf | `test_files/test-pdfs/SampleResume.pdf` |
+| Password Remove | PDF-withpassword.pdf | `test_files/PDF-withpassword.pdf` |
+
+### Available Test Files
+
+All test files are located in the `test_files/` directory:
+```
+test_files/
+├── test-pdfs/
+│   ├── SampleResume.pdf              # Resume with text and PII
+│   ├── Sample Tables.pdf             # PDF with table data
+│   └── BOB - Student-Loan-Application-Form.pdf  # PDF with form fields
+├── test-batch/
+│   ├── Analysis.docx                 # Word document
+│   └── Feedback.xlsx                 # Excel spreadsheet
+├── SamplePPTX.pptx                   # PowerPoint presentation
+├── GoNitro.png                       # Sample image
+└── PDF-withpassword.pdf              # Password-protected PDF
+```

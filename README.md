@@ -41,8 +41,10 @@ The Nitro Platform API provides programmatic access to document processing capab
 
 #### Using Postman
 1. Import the collection from `postman/Platform-API.postman_collection.json`
-2. Configure environment variables (see `postman/README.md`)
-3. Get a bearer token and run sample requests
+2. Configure collection variables (see `postman/README.md`)
+3. Get a bearer token
+4. Select test files for each request
+5. Run the sample requests
 
 #### Using Power Automate
 1. Create a custom connector using instructions in `power-automate/`
