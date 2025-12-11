@@ -11,3 +11,11 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+
+# Virtual environments (never commit these!)
+venv/
+env/
+.venv/
+.env/
+platform-integrations/
+nitro-venv/
