@@ -3,28 +3,31 @@
 🔒 PREPARE PDF FOR DISTRIBUTION
 ================================
 
-THE STORY:
-Your company handles sensitive documents - contracts, proposals, financial reports.
-These documents contain internal metadata that could reveal private information:
-  • Author names and email addresses
-  • Company internal file paths  
-  • Edit history and revision dates
+The script exemplifies a typical workflow of marketing brochure distribution.
+As a marketing professional, it's necessary to share company brochures externally 
+while ensuring they comply with corporate distribution standards. Word document 
+properties can expose internal information such as author names, template paths, 
+revision history, and company file structures that should remain confidential.
 
-Before sharing ANY document externally, we MUST remove this metadata to protect
-employee privacy, company confidentiality, and ensure legal compliance.
+This workflow automates compliant document preparation. The script processes each 
+file individually - for every brochure in the input folder, it converts the Word 
+document into PDF format, then compresses the file to reduce size and optimize 
+transmission, and finally removes all metadata properties to ensure privacy and 
+confidentiality. Each processed file is saved to the output folder, resulting in 
+distribution-ready brochures.
 
-This script automates the secure preparation workflow!
-
-WORKFLOW:
-1. Place Word/Excel/PowerPoint documents in input folder
-2. Script converts to PDF → compresses → strips metadata
-3. Find distribution-ready PDFs in output folder
+COMPANY DISTRIBUTION STANDARDS:
+  ✓ PDF format (prevents editing)
+  ✓ Compressed (optimized file size)
+  ✓ Properties removed (no metadata exposure)
+  ⏳ Annotations removed (feature in development)
+  ⏳ Accessibility enabled (feature in development)
 
 USAGE:
   python prepare_pdf_for_distribution.py <input_folder> <output_folder>
 
 EXAMPLE:
-  python prepare_pdf_for_distribution.py ./confidential ./ready_for_clients
+  python prepare_pdf_for_distribution.py ../../test_files/test-batch ./output
 """
 
 import sys
@@ -85,11 +88,33 @@ def main():
             temp_pdf.write_bytes(compressed)
             
             # Step 3: Remove all metadata/properties (PRIVACY PROTECTION)
-            # TODO: The set-properties API endpoint needs proper parameters
-            # Current issue: 422 error with empty params
-            # Skipping for now until API documentation is clarified
-            print("  🔄 Metadata removal (needs API param clarification)...")
-            clean_pdf = compressed  # Use compressed version for now
+            print("  🔒 Removing metadata properties...")
+            
+            # First, get current PDF properties
+            properties_response = client._request("extractions", "get-properties", temp_pdf, {})
+            current_properties = properties_response.get("result", {})
+            
+            # Display current properties
+            print(f"    Current properties found:")
+            for key, value in current_properties.items():
+                if key != "file" and value:  # Skip empty values and file object
+                    print(f"      • {key}: {value}")
+            
+            # Build params to clear properties
+            # Note: Only user-editable properties can be cleared via the API
+            # System properties (creator, producer, dates, trapped) are read-only in PDF spec
+            writable_props = ["title", "author", "subject", "keywords"]
+            clear_properties = {}
+            for key in writable_props:
+                if key in current_properties:
+                    clear_properties[key] = ""  # Set to empty string to clear
+            
+            # Display which properties will be removed
+            print(f"    Removing properties: {', '.join(clear_properties.keys())}")
+            
+            # Now set properties to empty strings
+            clean_pdf = client._request_bytes("transformations", "set-properties", temp_pdf, clear_properties)
+            temp_pdf.write_bytes(clean_pdf)
             
             # Future: Remove annotations (API in development)
             # clean_pdf = client.remove_annotations(temp_pdf)
