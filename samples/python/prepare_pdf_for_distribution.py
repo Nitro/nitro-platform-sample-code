@@ -35,6 +35,25 @@ from pathlib import Path
 from platform_api import PlatformAPIClient
 
 
+def get_pdf_properties_to_clear(client, pdf_path):
+    """
+    Get all PDF metadata properties that exist (to be cleared).
+    
+    Args:
+        client: PlatformAPIClient instance
+        pdf_path: Path to the PDF file
+    
+    Returns:
+        dict: Dictionary of properties to clear (all set to empty string)
+    """
+    # Get current PDF properties
+    properties_response = client._request("extractions", "get-properties", pdf_path, {})
+    current_properties = properties_response.get("result", {})
+    
+    # Return all properties (except 'file') set to empty string
+    return {k: "" for k in current_properties.keys() if k != "file"}
+
+
 def main():
     # Check command-line arguments
     if len(sys.argv) != 3:
@@ -90,30 +109,39 @@ def main():
             # Step 3: Remove all metadata/properties (PRIVACY PROTECTION)
             print("  🔒 Removing metadata properties...")
             
-            # First, get current PDF properties
-            properties_response = client._request("extractions", "get-properties", temp_pdf, {})
-            current_properties = properties_response.get("result", {})
+            # Get properties to clear from helper function
+            properties_to_clear = get_pdf_properties_to_clear(client, temp_pdf)
             
-            # Display current properties
-            print(f"    Current properties found:")
-            for key, value in current_properties.items():
-                if key != "file" and value:  # Skip empty values and file object
-                    print(f"      • {key}: {value}")
+            if properties_to_clear:
+                # Try to clear all properties
+                try:
+                    clean_pdf = client._request_bytes("transformations", "set-properties", temp_pdf, properties_to_clear)
+                    print(f"    ✓ Cleared: {', '.join(properties_to_clear.keys())}")
+                except Exception as e:
+                    if "422" in str(e):
+                        # Some properties are read-only, try each individually
+                        cleared = []
+                        read_only = []
+                        
+                        for prop_key in properties_to_clear.keys():
+                            try:
+                                client._request_bytes("transformations", "set-properties", temp_pdf, {prop_key: ""})
+                                cleared.append(prop_key)
+                            except:
+                                read_only.append(prop_key)
+                        
+                        clean_pdf = temp_pdf.read_bytes()
+                        
+                        if cleared:
+                            print(f"    ✓ Cleared: {', '.join(cleared)}")
+                        if read_only:
+                            print(f"    ⚠ Read-only (not cleared): {', '.join(read_only)}")
+                    else:
+                        raise
+            else:
+                print("    ℹ No properties to clear")
+                clean_pdf = temp_pdf.read_bytes()
             
-            # Build params to clear properties
-            # Note: Only user-editable properties can be cleared via the API
-            # System properties (creator, producer, dates, trapped) are read-only in PDF spec
-            writable_props = ["title", "author", "subject", "keywords"]
-            clear_properties = {}
-            for key in writable_props:
-                if key in current_properties:
-                    clear_properties[key] = ""  # Set to empty string to clear
-            
-            # Display which properties will be removed
-            print(f"    Removing properties: {', '.join(clear_properties.keys())}")
-            
-            # Now set properties to empty strings
-            clean_pdf = client._request_bytes("transformations", "set-properties", temp_pdf, clear_properties)
             temp_pdf.write_bytes(clean_pdf)
             
             # Future: Remove annotations (API in development)
