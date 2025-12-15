@@ -19,3 +19,5 @@ __pycache__/
 
 # Serena AI Assistant
 .serena/
+
+.plataform-integrations/

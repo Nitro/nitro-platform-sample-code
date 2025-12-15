@@ -32,26 +32,12 @@ EXAMPLE:
 
 import sys
 from pathlib import Path
-from platform_api import PlatformAPIClient
+from api.platform_api import PlatformAPIClient
+from helper_functions.document_helpers import validate_and_setup
 
 
-def get_pdf_properties_to_clear(client, pdf_path):
-    """
-    Get all PDF metadata properties that exist (to be cleared).
-    
-    Args:
-        client: PlatformAPIClient instance
-        pdf_path: Path to the PDF file
-    
-    Returns:
-        dict: Dictionary of properties to clear (all set to empty string)
-    """
-    # Get current PDF properties
-    properties_response = client._request("extractions", "get-properties", pdf_path, {})
-    current_properties = properties_response.get("result", {})
-    
-    # Return all properties (except 'file') set to empty string
-    return {k: "" for k in current_properties.keys() if k != "file"}
+# Configuration: Properties to remove from PDFs
+PROPERTIES_TO_REMOVE = ["title", "author", "subject", "keywords", "creator", "producer"]
 
 
 def main():
@@ -64,24 +50,8 @@ def main():
     input_folder = Path(sys.argv[1])
     output_folder = Path(sys.argv[2])
     
-    # Validate input folder exists
-    if not input_folder.exists() or not input_folder.is_dir():
-        print(f"❌ Error: Invalid input folder: {input_folder}")
-        sys.exit(1)
-    
-    # Create output folder if needed
-    output_folder.mkdir(parents=True, exist_ok=True)
-    
-    # Find all Office documents (Word, Excel, PowerPoint)
-    patterns = ['*.docx', '*.doc', '*.xlsx', '*.xls', '*.pptx', '*.ppt']
-    files = []
-    for pattern in patterns:
-        files.extend(input_folder.glob(pattern))
-    
-    if not files:
-        print(f"❌ No Office documents found in {input_folder}")
-        sys.exit(1)
-    
+    # Validate and setup
+    files = validate_and_setup(input_folder, output_folder)
     print(f"📋 Found {len(files)} document(s) to process\n")
     
     # Initialize API client (loads credentials from .env)
@@ -94,66 +64,32 @@ def main():
     for i, doc in enumerate(files, 1):
         print(f"[{i}/{len(files)}] Processing: {doc.name}")
         
+        temp_pdf = None
         try:
             # Step 1: Convert to PDF
             print("  🔐 Converting to PDF...")
             pdf_bytes = client.convert(doc, "pdf")
+            
             temp_pdf = output_folder / f"{doc.stem}_temp.pdf"
             temp_pdf.write_bytes(pdf_bytes)
             
+            
             # Step 2: Compress PDF
             print("  📦 Compressing...")
-            compressed = client.compress(temp_pdf, level=2)
-            temp_pdf.write_bytes(compressed)
+            compressed_pdf = client.compress(temp_pdf, level=2)
             
-            # Step 3: Remove all metadata/properties (PRIVACY PROTECTION)
-            print("  🔒 Removing metadata properties...")
+            temp_pdf.write_bytes(compressed_pdf)
             
-            # Get properties to clear from helper function
-            properties_to_clear = get_pdf_properties_to_clear(client, temp_pdf)
+            # Step 3: Remove metadata properties
+            print("  🔒 Removing metadata...")
+            properties_to_clear = {prop: "" for prop in PROPERTIES_TO_REMOVE}
+            clean_pdf = client._request_bytes("transformations", "set-properties", temp_pdf, properties_to_clear)
             
-            if properties_to_clear:
-                # Try to clear all properties
-                try:
-                    clean_pdf = client._request_bytes("transformations", "set-properties", temp_pdf, properties_to_clear)
-                    print(f"    ✓ Cleared: {', '.join(properties_to_clear.keys())}")
-                except Exception as e:
-                    if "422" in str(e):
-                        # Some properties are read-only, try each individually
-                        cleared = []
-                        read_only = []
-                        
-                        for prop_key in properties_to_clear.keys():
-                            try:
-                                client._request_bytes("transformations", "set-properties", temp_pdf, {prop_key: ""})
-                                cleared.append(prop_key)
-                            except:
-                                read_only.append(prop_key)
-                        
-                        clean_pdf = temp_pdf.read_bytes()
-                        
-                        if cleared:
-                            print(f"    ✓ Cleared: {', '.join(cleared)}")
-                        if read_only:
-                            print(f"    ⚠ Read-only (not cleared): {', '.join(read_only)}")
-                    else:
-                        raise
-            else:
-                print("    ℹ No properties to clear")
-                clean_pdf = temp_pdf.read_bytes()
-            
-            temp_pdf.write_bytes(clean_pdf)
-            
-            # Future: Remove annotations (API in development)
-            # clean_pdf = client.remove_annotations(temp_pdf)
-            
-            # Future: Make accessible (API in development)  
-            # clean_pdf = client.make_accessible(temp_pdf)
             
             # Save final PDF
             final_pdf = output_folder / f"{doc.stem}.pdf"
             final_pdf.write_bytes(clean_pdf)
-            temp_pdf.unlink()  # Delete temp file
+            temp_pdf.unlink()
             
             print(f"  ✅ Secured: {final_pdf.name}\n")
             success_count += 1
@@ -161,7 +97,7 @@ def main():
         except Exception as e:
             print(f"  ❌ FAILED: {e}\n")
             failed_count += 1
-            if temp_pdf.exists():
+            if temp_pdf and temp_pdf.exists():
                 temp_pdf.unlink()
     
     # Display summary
