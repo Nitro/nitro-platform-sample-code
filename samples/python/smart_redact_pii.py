@@ -4,7 +4,7 @@
 ======================
 
 The script exemplifies a typical workflow for protecting sensitive customer information.
-As a compliance officer or legal professional, it's essential to review and redact 
+As a compliance officer, it's essential to review and redact 
 personally identifiable information (PII) from documents before sharing them with 
 third parties, storing them in public systems, or using them for analysis. Manual 
 redaction is time-consuming and error-prone, potentially missing sensitive data like 

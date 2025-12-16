@@ -4,6 +4,7 @@
 # Temporary test files and outputs
 temp/
 output/
+test_output/
 
 # Python
 __pycache__/

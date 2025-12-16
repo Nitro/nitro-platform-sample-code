@@ -78,7 +78,7 @@ python bulk_password_protect.py ./input ./output "MyPassword123"
 
 ```python
 from pathlib import Path
-from platform_api import PlatformAPIClient
+from api.platform_api import PlatformAPIClient
 
 client = PlatformAPIClient()
 
