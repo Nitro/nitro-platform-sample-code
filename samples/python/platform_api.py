@@ -123,11 +123,11 @@ class PlatformAPIClient:
     
     def detect_pii(self, file_path: Path, language: str = "en") -> dict[str, Any]:
         """Detect PII and return bounding boxes."""
-        return self._request("extractions", "pii-bbox-extraction", file_path, {"language": language})
+        return self._request("extractions", "extract-pii-bounding-boxes", file_path, {"language": language})
     
     def find_text_boxes(self, file_path: Path, texts: list[str]) -> dict[str, Any]:
         """Find bounding boxes for specified text strings."""
-        return self._request("extractions", "text-bbox-extraction", file_path, {"texts": texts})
+        return self._request("extractions", "extract-text-bounding-boxes", file_path, {"texts": texts})
     
     def redact(self, file_path: Path, redactions: list[dict]) -> bytes:
         """Redact specified bounding boxes."""
