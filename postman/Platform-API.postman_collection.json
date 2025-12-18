@@ -740,7 +740,7 @@
 							"formdata": [
 								{
 									"key": "method",
-									"value": "pii-bbox-extraction"
+									"value": "extract-pii-bounding-boxes"
 								},
 								{
 									"key": "params",
@@ -800,7 +800,7 @@
 							"formdata": [
 								{
 									"key": "method",
-									"value": "text-bbox-extraction"
+									"value": "extract-text-bounding-boxes"
 								},
 								{
 									"key": "params",
