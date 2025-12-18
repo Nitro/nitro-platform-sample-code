@@ -20,9 +20,17 @@ Python examples for integrating with the Nitro Platform API.
    python quickstart.py
    ```
 
-## Files
+## API Clients
 
-- `platform_api.py` - Main API client library
+- `api/platform_api.py` - Platform API client (conversions, extractions, transformations)
+- `api/sign_api.py` - Sign API client (eSignature/envelopes) - **NEW!**
+
+See [SIGN_API.md](SIGN_API.md) for detailed Sign API documentation.
+
+## CLI Tools
+
+### Platform API Tools
+- `platform_api.py` - Main API client library (legacy location)
 - `quickstart.py` - Authentication test
 - `convert_cli.py` - Document conversion
 - `extract_data.py` - Extract forms and tables
@@ -30,6 +38,12 @@ Python examples for integrating with the Nitro Platform API.
 - `redact_by_keyword.py` - Redact specific keywords
 - `batch_process.py` - Batch convert documents
 - `bulk_password_protect.py` - Password protect multiple PDFs
+
+### Sign API Tools (eSignature)
+- `send_policies_to_employees.py` - Send multiple policy documents to multiple employees for signature
+
+### Complete Workflow Examples
+- `prepare_pdf_for_distribution.py` - Prepare PDFs for external distribution (convert, compress, remove metadata)
 
 ## Usage Examples
 

@@ -53,3 +53,19 @@ tasks:
     cmds:
       - cp .env.example .env
       - echo "✅ Created .env file - please update with your credentials"
+
+  # ========== Sign API Tasks (eSignature) ==========
+
+  send-policies:
+    desc: "Send policy PDF to multiple employees for signature (e.g., task send-policies PDF=policies.pdf CSV=employees.csv OUTPUT=./signed)"
+    cmds:
+      - python send_policies_to_employees.py {{.PDF}} {{.CSV}} {{.OUTPUT}}
+    requires:
+      vars: [PDF, CSV, OUTPUT]
+
+  send-policies-no-wait:
+    desc: "Send policy PDF to all employees without waiting (e.g., task send-policies-no-wait PDF=policies.pdf CSV=employees.csv OUTPUT=./signed)"
+    cmds:
+      - python send_policies_to_employees.py {{.PDF}} {{.CSV}} {{.OUTPUT}} --no-wait
+    requires:
+      vars: [PDF, CSV, OUTPUT]
