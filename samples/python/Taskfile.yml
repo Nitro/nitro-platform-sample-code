@@ -2,11 +2,11 @@ version: '3'
 
 tasks:
   smart-redact:
-    desc: "Smart redact PII from a document (e.g., task smart-redact INPUT=resume.pdf OUTPUT=redacted.pdf)"
+    desc: "Smart redact PII from documents in a folder (e.g., task smart-redact INPUT_DIR=./documents OUTPUT_DIR=./redacted)"
     cmds:
-      - python smart_redact_pii.py {{.INPUT}} {{.OUTPUT}}
+      - python smart_redact_pii.py "{{.INPUT_DIR}}" "{{.OUTPUT_DIR}}"
     requires:
-      vars: [INPUT, OUTPUT]
+      vars: [INPUT_DIR, OUTPUT_DIR]
 
   convert:
     desc: "Convert document from CLI (e.g., task convert INPUT=doc.docx OUTPUT=doc.pdf FORMAT=pdf)"
@@ -37,7 +37,7 @@ tasks:
       vars: [INPUT_DIR, OUTPUT_DIR, PASSWORD]
 
   redact-keyword:
-    desc: "Redact by keyword search (e.g., task redact-keyword INPUT=doc.pdf OUTPUT=redacted.pdf KEYWORDS='confidential secret')"
+    desc: "Redact specific keywords from a PDF (e.g., task redact-keyword INPUT=doc.pdf OUTPUT=redacted.pdf KEYWORDS='confidential secret')"
     cmds:
       - python redact_by_keyword.py {{.INPUT}} {{.OUTPUT}} {{.KEYWORDS}}
     requires:
@@ -54,18 +54,18 @@ tasks:
       - cp .env.example .env
       - echo "✅ Created .env file - please update with your credentials"
 
+  prepare-distribution:
+    desc: "Prepare documents for external distribution (convert, compress, remove metadata) (e.g., task prepare-distribution INPUT_DIR=./brochures OUTPUT_DIR=./ready)"
+    cmds:
+      - python prepare_pdf_for_distribution.py "{{.INPUT_DIR}}" "{{.OUTPUT_DIR}}"
+    requires:
+      vars: [INPUT_DIR, OUTPUT_DIR]
+
   # ========== Sign API Tasks (eSignature) ==========
 
-  send-policies:
-    desc: "Send policy PDF to multiple employees for signature (e.g., task send-policies PDF=policies.pdf CSV=employees.csv OUTPUT=./signed)"
+  onboard-employees:
+    desc: "Send company policies to new employees for signature (e.g., task onboard-employees POLICIES_DIR=./policies CSV=new_hires.csv)"
     cmds:
-      - python send_policies_to_employees.py {{.PDF}} {{.CSV}} {{.OUTPUT}}
+      - python employee_policy_onboarding.py "{{.POLICIES_DIR}}" "{{.CSV}}"
     requires:
-      vars: [PDF, CSV, OUTPUT]
-
-  send-policies-no-wait:
-    desc: "Send policy PDF to all employees without waiting (e.g., task send-policies-no-wait PDF=policies.pdf CSV=employees.csv OUTPUT=./signed)"
-    cmds:
-      - python send_policies_to_employees.py {{.PDF}} {{.CSV}} {{.OUTPUT}} --no-wait
-    requires:
-      vars: [PDF, CSV, OUTPUT]
+      vars: [POLICIES_DIR, CSV]

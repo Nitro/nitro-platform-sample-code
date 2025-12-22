@@ -63,16 +63,10 @@ from helper_functions.sign_helpers import (
     log_step
 )
 
-
-
-
-
-
-
 def main():
     # Check command-line arguments
     if len(sys.argv) != 3:
-        print('Usage: python send_policies_to_employees.py <policies_folder> <employees_csv>')
+        print('Usage: python employee_policy_onboarding.py <policies_folder> <employees_csv>')
         sys.exit(1)
     
     # Parse arguments

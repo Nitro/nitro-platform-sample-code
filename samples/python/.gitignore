@@ -14,9 +14,6 @@ __pycache__/
 .Python
 
 # Virtual environments (never commit these!)
-venv/
-env/
-.venv/
-.env/
+
 platform-integrations/
-nitro-venv/
+
