@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """Platform API client for Nitro Platform integrations."""
 
+from __future__ import annotations
+
 import json
 import mimetypes
 import os
@@ -8,7 +10,7 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Literal
 
-import requests
+import httpx
 from dotenv import load_dotenv
 
 if TYPE_CHECKING:
@@ -34,7 +36,7 @@ class PlatformAPIClient:
         if self._token and time.time() < self._token_expiry:
             return self._token
 
-        response = requests.post(
+        response = httpx.post(
             f"{self.base_url}/oauth/token",
             json={"clientID": self.client_id, "clientSecret": self.client_secret},
         )
@@ -61,7 +63,7 @@ class PlatformAPIClient:
         files = {"file": (file_path.name, file_path.read_bytes(), mime_type)}
         data = {"method": method, "params": json.dumps(params or {})}
 
-        response = requests.post(
+        response = httpx.post(
             f"{self.base_url}/{endpoint}", headers=headers, files=files, data=data
         )
 
@@ -85,7 +87,7 @@ class PlatformAPIClient:
         files = {"file": (file_path.name, file_path.read_bytes(), mime_type)}
         data = {"method": method, "params": json.dumps(params or {})}
 
-        response = requests.post(
+        response = httpx.post(
             f"{self.base_url}/{endpoint}", headers=headers, files=files, data=data
         )
 
@@ -94,7 +96,7 @@ class PlatformAPIClient:
 
         # Download from S3 URL
         download_url = result["result"]["file"]["URL"]
-        download_response = requests.get(download_url)
+        download_response = httpx.get(download_url)
         download_response.raise_for_status()
         return download_response.content
 
@@ -155,7 +157,7 @@ class PlatformAPIClient:
             files = [("file", f) for f in opened_files]
             data = {"method": "merge", "params": "{}"}
 
-            response = requests.post(
+            response = httpx.post(
                 f"{self.base_url}/transformations", headers=headers, files=files, data=data
             )
             response.raise_for_status()

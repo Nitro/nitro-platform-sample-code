@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 """Sign API client for Nitro Sign integrations (eSignature operations)."""
 
+from __future__ import annotations
+
 import json
 import os
 import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-import requests
+import httpx
 from dotenv import load_dotenv
 
 if TYPE_CHECKING:
@@ -33,7 +35,7 @@ class SignAPIClient:
         if self._token and time.time() < self._token_expiry:
             return self._token
 
-        response = requests.post(
+        response = httpx.post(
             f"{self.base_url}/oauth/token",
             json={"clientID": self.client_id, "clientSecret": self.client_secret},
         )
@@ -53,7 +55,7 @@ class SignAPIClient:
         """Make authenticated API request returning JSON."""
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
-        response = requests.request(
+        response = httpx.request(
             method=method,
             url=f"{self.base_url}{endpoint}",
             headers=headers,
@@ -63,7 +65,7 @@ class SignAPIClient:
 
         try:
             response.raise_for_status()
-        except requests.exceptions.HTTPError:
+        except httpx.HTTPError:
             # Try to get error details from response
             try:
                 error_detail = response.json()
@@ -80,7 +82,7 @@ class SignAPIClient:
         """Make authenticated API request returning binary data."""
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
-        response = requests.request(
+        response = httpx.request(
             method=method, url=f"{self.base_url}{endpoint}", headers=headers, params=params
         )
 
@@ -150,7 +152,7 @@ class SignAPIClient:
             envelope_id: UUID of the envelope
         """
         headers = {"Authorization": f"Bearer {self._get_token()}"}
-        response = requests.delete(f"{self.base_url}/sign/envelopes/{envelope_id}", headers=headers)
+        response = httpx.delete(f"{self.base_url}/sign/envelopes/{envelope_id}", headers=headers)
         response.raise_for_status()
 
     # ========== Document Management ==========
@@ -186,7 +188,7 @@ class SignAPIClient:
 
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
-        response = requests.post(
+        response = httpx.post(
             f"{self.base_url}/sign/envelopes/{envelope_id}/documents", headers=headers, files=files
         )
 

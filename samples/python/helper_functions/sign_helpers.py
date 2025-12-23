@@ -2,6 +2,8 @@
 Sign API helper utilities for envelope operations.
 """
 
+from __future__ import annotations
+
 import csv
 import json
 import time
@@ -140,9 +142,9 @@ def create_signature_envelope(
 
         headers = {"Authorization": f"Bearer {sign_client._get_token()}"}
 
-        import requests
+        import httpx
 
-        response = requests.post(  # noqa: S113
+        response = httpx.post(
             f"{sign_client.base_url}/sign/envelopes/{envelope_id}/documents",
             headers=headers,
             files=files,
