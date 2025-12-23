@@ -1,0 +1,111 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = []
+
+[project]
+name = "nitro-platform-samples"
+version = "0.1.0"
+description = "Nitro Platform API samples and examples"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
+    "reportlab>=4.0.0",
+]
+[tool.ruff]
+format.preview = true
+target-version = "py314"
+line-length = 100
+lint.select = [
+  "A",    # builtins shadowing
+  "ANN",  # type annotations
+  "ARG",  # unused arguments
+  "B",    # bugbear (common bugs & bad patterns)
+  "BLE",  # blind excepts
+  "C4",   # comprehensions
+  "DTZ",  # datetime timezone
+  "E",    # pycodestyle errors
+  "ERA",  # eradicate commented-out code
+  "FA",   # future annotations
+  "FBT",  # boolean trap
+  "F",    # pyflakes
+  "FURB", # refurb - modern Python idioms
+  "I",    # import sorting
+  "ICN",  # import conventions
+  "ISC",  # implicit str concat
+  "N",    # naming conventions
+  "NPY",  # numpy rules
+  "PGH",  # pygrep-hooks
+  "PTH",  # pathlib
+  "PT",   # pytest style
+  "RET",  # return statements
+  "RUF",  # Ruff extra rules
+  "TRY",  # tryceratops
+  "S",    # security
+  "SIM",  # simplifications
+  "C90",  # mccabe complexity
+  "TID",  # tidy imports
+  "TC",   # typing under TYPE_CHECKING
+  "TD",   # TODOs must be annotated
+  "UP",   # pyupgrade / newer syntax
+  "W",    # pycodestyle warnings
+  "YTT",  # flake8-2020
+  "T10",  # debugger statements
+]
+lint.ignore = ["S101", "S311", "TRY003", "TC006"]
+lint.flake8-type-checking.strict = true
+
+[tool.pyright]
+typeCheckingMode = "strict"
+
+# Pylint--------------------------------------------------------------------------
+# https://github.com/atlassian-api/atlassian-python-api/blob/master/pyproject.toml
+# Pylint--------------------------------------------------------------------------
+[tool.pylint.FORMAT]
+max-line-length = 100
+
+[tool.pylint.MASTER]
+jobs = 4
+ignore-paths = '.venv'
+
+[tool.pylint.REPORTS]
+output-format = "colorized"
+reports = "no"
+
+[tool.pylint.TYPECHECK]
+generated-members = []
+
+[tool.pylint.BASIC]
+good-names-rgxs = [".*Dep$"]
+good-names = [
+  "i",
+  "j",
+  "n",
+]
+
+# [tool.pylint.SPELLING]
+# Spelling checker disabled - requires language dictionaries to be installed
+# spelling-private-dict-file = "private-dictionary.txt"
+# spelling-dict = "en_GB"
+
+[tool.pylint.DESIGN]
+max-args = 7
+min-public-methods = 1
+max-positional-arguments = 5
+
+
+[tool.pylint.LOGGING]
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = ["logging-fstring-interpolation", "wrong-import-order"]
+
+[project.optional-dependencies]
+dev = [
+    "pyenchant>=3.3.0",
+    "pylint>=4.0.4",
+    "pyright>=1.1.407",
+]
