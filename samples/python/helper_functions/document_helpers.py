@@ -36,7 +36,7 @@ def validate_and_setup(
     output_folder.mkdir(parents=True, exist_ok=True)
 
     # Find all matching files
-    files = []
+    files: list[Path] = []
     for pattern in file_patterns:
         files.extend(input_folder.glob(pattern))
 

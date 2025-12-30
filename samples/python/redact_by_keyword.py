@@ -40,6 +40,7 @@ from api.platform_api import PlatformAPIClient
 
 
 def main() -> None:
+    """Redact specific keywords from PDF documents using text search."""
     # Check command-line arguments
     if len(sys.argv) < 4:
         print(

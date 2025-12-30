@@ -1,3 +1,5 @@
+"""Quickstart script to test Nitro Platform API authentication and connection."""
+
 import os
 
 import httpx
@@ -33,7 +35,7 @@ def test_connection(token: str) -> bool | None:
             return True
         response.raise_for_status()
         return True  # noqa: TRY300
-    except httpx.HTTPError as e:
+    except httpx.HTTPStatusError as e:
         if e.response.status_code == 404:
             print("✅ Authentication successful (404 expected for test job ID)")
             return True
@@ -41,6 +43,7 @@ def test_connection(token: str) -> bool | None:
 
 
 def main() -> None:
+    """Test API authentication and connection."""
     if not CLIENT_ID or not CLIENT_SECRET:
         print("❌ Missing credentials!")
         print("To get your credentials:")

@@ -37,6 +37,7 @@ from helper_functions.document_helpers import validate_and_setup
 
 
 def main() -> None:
+    """Automatically detect and redact PII (personally identifiable information) from PDFs."""
     # Check command-line arguments
     if len(sys.argv) != 3:
         print("Usage: python smart_redact_pii.py <input_folder> <output_folder>")

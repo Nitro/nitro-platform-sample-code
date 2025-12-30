@@ -41,6 +41,7 @@ PROPERTIES_TO_REMOVE = ["title", "author", "subject", "keywords", "creator", "pr
 
 
 def main() -> None:
+    """Prepare documents for distribution by converting to PDF and removing metadata."""
     # Check command-line arguments
     if len(sys.argv) != 3:
         print("Usage: python prepare_pdf_for_distribution.py <input_folder> <output_folder>")
@@ -82,9 +83,7 @@ def main() -> None:
             # Step 3: Remove metadata properties
             print("  🔒 Removing metadata...")
             properties_to_clear = dict.fromkeys(PROPERTIES_TO_REMOVE, "")
-            clean_pdf = client._request_bytes(
-                "transformations", "set-properties", temp_pdf, properties_to_clear
-            )
+            clean_pdf = client.set_properties(temp_pdf, properties_to_clear)
 
             # Save final PDF
             final_pdf = output_folder / f"{doc.stem}.pdf"

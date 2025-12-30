@@ -42,6 +42,7 @@ from api.platform_api import PlatformAPIClient
 
 
 def main() -> None:
+    """Extract structured data (forms or tables) from PDF documents."""
     # Check command-line arguments
     if len(sys.argv) != 4:
         print("Usage: python extract_data.py <mode> <input_pdf> <output_json>")
@@ -95,7 +96,7 @@ def main() -> None:
             item_count = len(result.get("tables", []))
 
         # Save extracted data as JSON
-        output_path.write_text(json.dumps(data, indent=2))
+        output_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
         # Display success message
         print("✅ Extraction successful!")

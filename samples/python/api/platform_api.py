@@ -5,46 +5,20 @@ from __future__ import annotations
 
 import json
 import mimetypes
-import os
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
 import httpx
-from dotenv import load_dotenv
+
+from .base_client import BaseOAuthClient
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-load_dotenv()
-
 
 @dataclass
-class PlatformAPIClient:
+class PlatformAPIClient(BaseOAuthClient):
     """Synchronous client for Nitro Platform API operations."""
-
-    base_url: str = field(
-        default_factory=lambda: os.getenv("PLATFORM_BASE_URL", "https://api.gonitro.dev")
-    )
-    client_id: str = field(default_factory=lambda: os.getenv("PLATFORM_CLIENT_ID"))
-    client_secret: str = field(default_factory=lambda: os.getenv("PLATFORM_CLIENT_SECRET"))
-    _token: str | None = field(default=None, init=False)
-    _token_expiry: float = field(default=0, init=False)
-
-    def _get_token(self) -> str:
-        """Get or refresh OAuth2 access token."""
-        if self._token and time.time() < self._token_expiry:
-            return self._token
-
-        response = httpx.post(
-            f"{self.base_url}/oauth/token",
-            json={"clientID": self.client_id, "clientSecret": self.client_secret},
-        )
-        response.raise_for_status()
-        data = response.json()
-        self._token = data["accessToken"]
-        self._token_expiry = time.time() + data.get("expiresIn", 3600) - 60
-        return self._token
 
     def _request(
         self,
@@ -128,7 +102,7 @@ class PlatformAPIClient:
             "extractions", "extract-text-bounding-boxes", file_path, {"texts": texts}
         )
 
-    def redact(self, file_path: Path, redactions: list[dict]) -> bytes:
+    def redact(self, file_path: Path, redactions: list[dict[str, Any]]) -> bytes:
         """Redact specified bounding boxes."""
         return self._request_bytes(
             "transformations", "redact", file_path, {"redactions": redactions}
@@ -146,6 +120,12 @@ class PlatformAPIClient:
     def compress(self, file_path: Path, level: int = 2) -> bytes:
         """Compress PDF (level 1-3)."""
         return self._request_bytes("transformations", "compress", file_path, {"level": level})
+
+    def set_properties(self, file_path: Path, properties: dict[str, str]) -> bytes:
+        """Set or clear PDF metadata properties."""
+        return self._request_bytes(
+            "transformations", "set-properties", file_path, properties
+        )
 
     def merge(self, file_paths: list[Path]) -> bytes:
         """Merge multiple PDFs."""

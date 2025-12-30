@@ -37,6 +37,7 @@ from helper_functions.document_helpers import validate_and_setup
 
 
 def main() -> None:
+    """Apply password protection to all PDF files in a directory."""
     # Check command-line arguments
     if len(sys.argv) != 4:
         print("Usage: python bulk_password_protect.py <input_folder> <output_folder> <password>")

@@ -47,6 +47,7 @@ OUTPUT STRUCTURE:
 
 import sys
 from pathlib import Path
+from typing import Any
 
 from api.sign_api import SignAPIClient
 from helper_functions.sign_helpers import (
@@ -65,17 +66,18 @@ class EnvelopeNotSignedError(Exception):
     """Raised when an envelope was not signed in time."""
 
 
-def main() -> None:
-    # Check command-line arguments
-    if len(sys.argv) != 3:
-        print("Usage: python employee_policy_onboarding.py <policies_folder> <employees_csv>")
-        sys.exit(1)
+def _validate_and_setup_inputs(
+    policies_folder: Path, employees_csv: Path
+) -> tuple[Path, list[dict[str, str]], list[dict[str, Any]]]:
+    """Validate inputs and load data.
 
-    # Parse arguments
-    policies_folder = Path(sys.argv[1])
-    employees_csv = Path(sys.argv[2])
-    output_folder = Path("output")
+    Args:
+        policies_folder: Path to folder containing policy PDFs
+        employees_csv: Path to CSV file with employee data
 
+    Returns:
+        Tuple of (output_folder, employees, documents)
+    """
     # Validate inputs
     if not policies_folder.exists() or not policies_folder.is_dir():
         print(f"❌ Policies folder not found: {policies_folder}")
@@ -86,6 +88,7 @@ def main() -> None:
         sys.exit(1)
 
     # Display header
+    output_folder = Path("output")
     print("=" * 60)
     print("📝 SEND POLICIES TO EMPLOYEES")
     print("=" * 60)
@@ -95,15 +98,94 @@ def main() -> None:
     print("=" * 60)
     print()
 
+    # Load employees and documents
+    employees = load_employees_from_csv(employees_csv)
+    print(f"👥 Found {len(employees)} employee(s)\n")
+
+    documents = load_policy_documents_from_folder(policies_folder)
+
+    # Create output folder
+    output_folder.mkdir(parents=True, exist_ok=True)
+
+    return output_folder, employees, documents
+
+
+def _process_employee_onboarding(
+    sign_client: SignAPIClient,
+    employee: dict[str, str],
+    documents: list[dict[str, Any]],
+    output_folder: Path,
+    *,
+    employee_num: int,
+    total_employees: int,
+) -> None:
+    """Process onboarding workflow for a single employee.
+
+    Args:
+        sign_client: Sign API client instance
+        employee: Employee data dict with 'name' and 'email'
+        documents: List of policy documents to send
+        output_folder: Base output folder for signed documents
+        employee_num: Current employee number (for display)
+        total_employees: Total number of employees (for display)
+
+    Raises:
+        EnvelopeNotSignedError: If envelope is not signed within timeout
+        Exception: For other errors during processing
+    """
+    name = employee["name"]
+    email = employee["email"]
+
+    print(f"\n[{employee_num}/{total_employees}] {name}")
+
+    # Create employee-specific output folder
+    employee_folder = output_folder / create_employee_folder_name(name)
+    employee_folder.mkdir(parents=True, exist_ok=True)
+
+    # Create envelope and upload documents
+    log_step("📝 Creating envelope...")
+    envelope_id, document_ids = create_signature_envelope(sign_client, documents, name, email)
+
+    # Add participant (signer)
+    log_step("👤 Adding signer...")
+    participant_id = sign_client.create_participant(
+        envelope_id, {"email": email, "role": "signer", "name": name}
+    )["ID"]
+
+    # Add signature fields to all documents
+    log_step("✍️  Adding fields...")
+    add_signature_fields_to_documents(sign_client, envelope_id, document_ids, participant_id)
+
+    # Send and monitor envelope
+    log_step("📤 Sending...")
+    status = send_and_monitor_envelope(sign_client, envelope_id, email, timeout_minutes=60)
+
+    if status != "sealed":
+        raise EnvelopeNotSignedError(f"Envelope not signed: {status}")
+
+    # Download signed documents
+    log_step("📥 Downloading...")
+    download_signed_document(sign_client, envelope_id, employee_folder, "signed-policies.zip")
+
+    print("  ✅ Completed\n")
+
+
+def main() -> None:
+    """Send company policy documents to employees for electronic signature via Sign API."""
+    # Check command-line arguments
+    if len(sys.argv) != 3:
+        print("Usage: python employee_policy_onboarding.py <policies_folder> <employees_csv>")
+        sys.exit(1)
+
+    # Parse arguments
+    policies_folder = Path(sys.argv[1])
+    employees_csv = Path(sys.argv[2])
+
     try:
-        # Load employees and documents
-        employees = load_employees_from_csv(employees_csv)
-        print(f"👥 Found {len(employees)} employee(s)\n")
-
-        documents = load_policy_documents_from_folder(policies_folder)
-
-        # Create output folder
-        output_folder.mkdir(parents=True, exist_ok=True)
+        # Validate inputs and load data
+        output_folder, employees, documents = _validate_and_setup_inputs(
+            policies_folder, employees_csv
+        )
 
         # Initialize Sign API client
         sign_client = SignAPIClient()
@@ -117,51 +199,15 @@ def main() -> None:
         failed_count = 0
 
         for i, employee in enumerate(employees, 1):
-            name = employee["name"]
-            email = employee["email"]
-
-            print(f"\n[{i}/{len(employees)}] {name}")
-
             try:
-                # Create employee-specific output folder
-                folder_name = create_employee_folder_name(name)
-                employee_folder = output_folder / folder_name
-                employee_folder.mkdir(parents=True, exist_ok=True)
-
-                # Create envelope and upload documents
-                log_step("📝 Creating envelope...")
-                envelope_id, document_ids = create_signature_envelope(
-                    sign_client, documents, name, email
+                _process_employee_onboarding(
+                    sign_client,
+                    employee,
+                    documents,
+                    output_folder,
+                    employee_num=i,
+                    total_employees=len(employees),
                 )
-
-                # Add participant (signer)
-                log_step("👤 Adding signer...")
-                participant_data = {"email": email, "role": "signer", "name": name}
-                participant = sign_client.create_participant(envelope_id, participant_data)
-                participant_id = participant["ID"]
-
-                # Add signature fields to all documents
-                log_step("✍️  Adding fields...")
-                add_signature_fields_to_documents(
-                    sign_client, envelope_id, document_ids, participant_id
-                )
-
-                # Send and monitor envelope
-                log_step("📤 Sending...")
-                status = send_and_monitor_envelope(
-                    sign_client, envelope_id, email, timeout_minutes=60
-                )
-
-                if status != "sealed":
-                    raise EnvelopeNotSignedError(f"Envelope not signed: {status}")  # noqa: TRY301
-
-                # Download signed documents
-                log_step("📥 Downloading...")
-                download_signed_document(
-                    sign_client, envelope_id, employee_folder, "signed-policies.zip"
-                )
-
-                print("  ✅ Completed\n")
                 success_count += 1
 
             except Exception as e:  # noqa: BLE001

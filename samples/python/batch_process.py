@@ -40,6 +40,7 @@ SUPPORTED_FORMATS = ["pdf", "docx", "xlsx", "pptx"]
 
 
 def main() -> None:
+    """Process multiple documents in batch, converting them to a specified format."""
     # Check command-line arguments
     if len(sys.argv) < 4:
         print("Usage: python batch_process.py <input_folder> <output_folder> <format> [pattern]")

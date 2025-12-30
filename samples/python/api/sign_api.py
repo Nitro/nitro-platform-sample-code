@@ -4,46 +4,20 @@
 from __future__ import annotations
 
 import json
-import os
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import httpx
-from dotenv import load_dotenv
+
+from .base_client import BaseOAuthClient
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-load_dotenv()
-
 
 @dataclass
-class SignAPIClient:
+class SignAPIClient(BaseOAuthClient):
     """Synchronous client for Nitro Sign API operations (eSignature/envelopes)."""
-
-    base_url: str = field(
-        default_factory=lambda: os.getenv("PLATFORM_BASE_URL", "https://api.gonitro.dev")
-    )
-    client_id: str = field(default_factory=lambda: os.getenv("PLATFORM_CLIENT_ID"))
-    client_secret: str = field(default_factory=lambda: os.getenv("PLATFORM_CLIENT_SECRET"))
-    _token: str | None = field(default=None, init=False)
-    _token_expiry: float = field(default=0, init=False)
-
-    def _get_token(self) -> str:
-        """Get or refresh OAuth2 access token."""
-        if self._token and time.time() < self._token_expiry:
-            return self._token
-
-        response = httpx.post(
-            f"{self.base_url}/oauth/token",
-            json={"clientID": self.client_id, "clientSecret": self.client_secret},
-        )
-        response.raise_for_status()
-        data = response.json()
-        self._token = data["accessToken"]
-        self._token_expiry = time.time() + data.get("expiresIn", 3600) - 60
-        return self._token
 
     def _request(
         self,
@@ -103,7 +77,7 @@ class SignAPIClient:
         Returns:
             Dict with 'items' (list of envelopes) and optional 'nextPage' (cursor token)
         """
-        params = {}
+        params: dict[str, str] = {}
         if page_after:
             params["pageAfter"] = page_after
         elif page_before:

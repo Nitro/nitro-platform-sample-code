@@ -38,6 +38,7 @@ SUPPORTED_FORMATS = ["pdf", "docx", "xlsx", "pptx", "png"]
 
 
 def main() -> None:
+    """Convert a document from one format to another using the Platform API."""
     # Check command-line arguments
     if len(sys.argv) != 4:
         print("Usage: python convert_cli.py <input_file> <output_file> <format>")

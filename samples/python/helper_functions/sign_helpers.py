@@ -8,9 +8,11 @@ import csv
 import json
 import time
 import zipfile
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path  # noqa: TC003
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+import httpx
 
 if TYPE_CHECKING:
     from api.sign_api import SignAPIClient
@@ -28,7 +30,7 @@ def create_employee_folder_name(employee_name: str) -> str:
     return employee_name.lower().replace(" ", "-").replace(".", "")
 
 
-def load_employees_from_csv(csv_path: Path) -> list[dict]:
+def load_employees_from_csv(csv_path: Path) -> list[dict[str, str]]:
     """Load employee list from CSV file.
 
     Args:
@@ -43,13 +45,14 @@ def load_employees_from_csv(csv_path: Path) -> list[dict]:
     if not csv_path.exists():
         raise ValueError(f"CSV file not found: {csv_path}")
 
-    employees = []
+    employees: list[dict[str, str]] = []
 
     with csv_path.open(encoding="utf-8") as f:
         reader = csv.DictReader(f)
 
         # Validate CSV has required columns
-        if "name" not in reader.fieldnames or "email" not in reader.fieldnames:
+        fieldnames = reader.fieldnames
+        if not fieldnames or "name" not in fieldnames or "email" not in fieldnames:
             raise ValueError('CSV must have "name" and "email" columns')
 
         for row in reader:
@@ -65,7 +68,7 @@ def load_employees_from_csv(csv_path: Path) -> list[dict]:
     return employees
 
 
-def load_policy_documents_from_folder(policies_folder: Path) -> list[dict]:
+def load_policy_documents_from_folder(policies_folder: Path) -> list[dict[str, Any]]:
     """Load all PDF files from the policies folder.
 
     Args:
@@ -81,7 +84,7 @@ def load_policy_documents_from_folder(policies_folder: Path) -> list[dict]:
 
     print(f"📂 Found {len(policy_files)} policy document(s)\n")
 
-    documents = []
+    documents: list[dict[str, Any]] = []
     for pf in policy_files:
         with pf.open("rb") as f:
             binary_data = f.read()
@@ -91,9 +94,55 @@ def load_policy_documents_from_folder(policies_folder: Path) -> list[dict]:
     return documents
 
 
+def _upload_documents_to_envelope(
+    sign_client: SignAPIClient, envelope_id: str, documents: list[dict[str, Any]]
+) -> list[str]:
+    """Upload documents to an existing envelope.
+
+    Args:
+        sign_client: Sign API client instance
+        envelope_id: ID of the envelope to upload to
+        documents: List of document dicts with 'name', 'binary', 'path'
+
+    Returns:
+        List of document IDs
+    """
+    document_ids: list[str] = []
+
+    for doc in documents:
+        doc_name = doc["name"]
+        doc_binary = doc["binary"]
+
+        # Prepare metadata as JSON string
+        metadata = json.dumps({"name": doc_name})
+
+        # Prepare form-data with binary content
+        files = {
+            "metadata": ("metadata", metadata, "application/json"),
+            "payload": (doc_name, doc_binary, "application/pdf"),
+        }
+
+        token = sign_client.get_token()
+        headers = {"Authorization": f"Bearer {token}"}
+
+        response = httpx.post(
+            f"{sign_client.base_url}/sign/envelopes/{envelope_id}/documents",
+            headers=headers,
+            files=files,
+        )
+
+        response.raise_for_status()
+        document = response.json()
+
+        document_id = document["ID"]
+        document_ids.append(document_id)
+
+    return document_ids
+
+
 def create_signature_envelope(
     sign_client: SignAPIClient,
-    documents: list[dict],
+    documents: list[dict[str, Any]],
     employee_name: str,
     _employee_email: str,
 ) -> tuple[str, list[str]]:
@@ -125,36 +174,7 @@ def create_signature_envelope(
     envelope_id = envelope["ID"]
 
     # Upload documents to envelope
-    document_ids = []
-
-    for doc in documents:
-        doc_name = doc["name"]
-        doc_binary = doc["binary"]
-
-        # Prepare metadata as JSON string
-        metadata = json.dumps({"name": doc_name})
-
-        # Prepare form-data with binary content
-        files = {
-            "metadata": ("metadata", metadata, "application/json"),
-            "payload": (doc_name, doc_binary, "application/pdf"),
-        }
-
-        headers = {"Authorization": f"Bearer {sign_client._get_token()}"}
-
-        import httpx
-
-        response = httpx.post(
-            f"{sign_client.base_url}/sign/envelopes/{envelope_id}/documents",
-            headers=headers,
-            files=files,
-        )
-
-        response.raise_for_status()
-        document = response.json()
-
-        document_id = document["ID"]
-        document_ids.append(document_id)
+    document_ids = _upload_documents_to_envelope(sign_client, envelope_id, documents)
 
     return envelope_id, document_ids
 
@@ -174,24 +194,26 @@ def add_signature_fields_to_documents(
         participant_id: ID of the participant who will sign
     """
     for doc_id in document_ids:
-        # Add signature field
+        # Add signature field (positioned bottom-left of page)
+        # Coordinates: [x, y, width, height] in points (72 points = 1 inch)
+        # Standard letter page: 612 x 792 points
         signature_field_data = {
             "participantID": participant_id,
             "type": "signature",
             "label": "Your Signature",
             "page": 1,
-            "boundingBox": [200, 300, 60, 40],
+            "boundingBox": [50, 100, 200, 50],  # Bottom area, safe coordinates
             "required": True,
         }
         sign_client.create_field(envelope_id, doc_id, signature_field_data)
 
-        # Add date field
+        # Add date field (positioned to the right of signature)
         date_field_data = {
             "participantID": participant_id,
             "type": "date",
             "label": "Date Signed",
             "page": 1,
-            "boundingBox": [320, 650, 150, 50],
+            "boundingBox": [270, 100, 150, 50],  # Next to signature, safe coordinates
             "required": True,
             "format": "MM/DD/YYYY",
         }
@@ -216,7 +238,7 @@ def send_and_monitor_envelope(
     sign_client.send_for_signing(envelope_id)
 
     # Log send time and status
-    send_time = datetime.now(tz=datetime.UTC).strftime("%Y-%m-%d %H:%M:%S")
+    send_time = datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M:%S")
     print(f"     ✅ Sent at: {send_time}")
     print(f"     📧 Email sent to: {email}")
     print(f"     🔗 Envelope ID: {envelope_id}")
@@ -232,7 +254,7 @@ def send_and_monitor_envelope(
     status = monitor_envelope(sign_client, envelope_id, timeout_minutes)
 
     # Log final status
-    completion_time = datetime.now(tz=datetime.UTC).strftime("%Y-%m-%d %H:%M:%S")
+    completion_time = datetime.now(tz=UTC).strftime("%Y-%m-%d %H:%M:%S")
     print(f"     📊 Final status: {status}")
     print(f"     🕐 Completed at: {completion_time}")
 
