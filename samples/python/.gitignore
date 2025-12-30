@@ -13,6 +13,10 @@ __pycache__/
 .Python
 *.egg-info/
 
-# Virtual environment
+# uv
 .venv/
+uv.lock
+
+# Ruff cache
+.ruff_cache/
 

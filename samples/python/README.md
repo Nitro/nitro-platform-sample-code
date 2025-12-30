@@ -51,8 +51,58 @@ This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python pac
 
 4. Run the quickstart example:
    ```bash
-   python quickstart.py
+   uv run python quickstart.py
    ```
+
+## Development
+
+### Running Scripts with uv
+
+All Python scripts should be run using `uv run` to ensure they use the correct dependencies:
+
+```bash
+uv run python script.py
+```
+
+### Code Quality Tools
+
+This project uses multiple linting and type checking tools configured in `pyproject.toml`:
+
+#### Ruff (Fast Python linter)
+```bash
+# Check for linting issues
+uvx ruff check
+
+# Auto-fix issues
+uvx ruff check --fix
+
+# Format code
+uvx ruff format
+```
+
+#### Pylint (Comprehensive linter)
+```bash
+# Check all Python files
+uv run pylint *.py api/*.py helper_functions/*.py
+
+# Check specific file
+uv run pylint convert_cli.py
+```
+
+#### Pyright (Type checker)
+```bash
+# Type check all files
+uv run pyright
+
+# Type check specific file
+uv run pyright convert_cli.py
+```
+
+#### Run All Quality Checks
+```bash
+# Run all three tools
+uvx ruff check && uv run pylint *.py api/*.py helper_functions/*.py && uv run pyright
+```
 
 ## Architecture
 
@@ -101,43 +151,43 @@ api/
 
 ### Authentication
 ```bash
-python quickstart.py
+uv run python quickstart.py
 ```
 
 ### Convert Documents
 ```bash
 # Convert DOCX to PDF
-python convert_cli.py input.docx output.pdf pdf
+uv run python convert_cli.py input.docx output.pdf pdf
 
 # Convert PDF to DOCX
-python convert_cli.py input.pdf output.docx docx
+uv run python convert_cli.py input.pdf output.docx docx
 ```
 
 ### Extract Data
 ```bash
 # Extract tables
-python extract_data.py tables input.pdf output.json
+uv run python extract_data.py tables input.pdf output.json
 
 # Extract forms
-python extract_data.py forms input.pdf output.json
+uv run python extract_data.py forms input.pdf output.json
 ```
 
 ### Redact Content
 ```bash
 # Auto-detect and redact PII
-python smart_redact_pii.py input.pdf output.pdf
+uv run python smart_redact_pii.py input_folder output_folder
 
 # Redact specific keywords
-python redact_by_keyword.py input.pdf output.pdf "confidential" "secret"
+uv run python redact_by_keyword.py input_folder output_folder "confidential" "secret"
 ```
 
 ### Batch Operations
 ```bash
 # Convert all DOCX files to PDF
-python batch_process.py ./input ./output pdf "*.docx"
+uv run python batch_process.py ./input ./output pdf "*.docx"
 
 # Password protect all PDFs
-python bulk_password_protect.py ./input ./output "MyPassword123"
+uv run python bulk_password_protect.py ./input ./output "MyPassword123"
 ```
 
 ## Using the API Client
