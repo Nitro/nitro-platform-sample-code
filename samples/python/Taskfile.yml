@@ -1,6 +1,11 @@
 version: '3'
 
 tasks:
+  quickstart:
+    desc: "Test API authentication (first thing to run after setup)"
+    cmds:
+      - uv run python quickstart.py
+
   smart-redact:
     desc: "Smart redact PII from documents in a folder (e.g., task smart-redact INPUT_DIR=./documents OUTPUT_DIR=./redacted)"
     cmds:

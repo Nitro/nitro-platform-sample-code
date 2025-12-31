@@ -29,8 +29,10 @@ EXAMPLES:
   python batch_process.py ./documents ./converted png "*"
 """
 
-import sys
-from pathlib import Path
+from pathlib import Path  # noqa: TC003
+from typing import Annotated
+
+import typer
 
 from api.platform_api import PlatformAPIClient
 from helper_functions.document_helpers import validate_and_setup
@@ -38,31 +40,37 @@ from helper_functions.document_helpers import validate_and_setup
 # Supported output formats
 SUPPORTED_FORMATS = ["pdf", "docx", "xlsx", "pptx"]
 
+app = typer.Typer()
 
-def main() -> None:
+
+@app.command()
+def main(
+    input_folder: Annotated[
+        Path, typer.Argument(help="Input folder containing documents to convert")
+    ],
+    output_folder: Annotated[Path, typer.Argument(help="Output folder for converted documents")],
+    to_format: Annotated[
+        str,
+        typer.Argument(
+            help=f"Target format for conversion. Supported: {', '.join(SUPPORTED_FORMATS)}"
+        ),
+    ],
+    pattern: Annotated[
+        str,
+        typer.Argument(help="File pattern to match (e.g., '*.docx', '*.pdf', '*')"),
+    ] = "*",
+) -> None:
     """Process multiple documents in batch, converting them to a specified format."""
-    # Check command-line arguments
-    if len(sys.argv) < 4:
-        print("Usage: python batch_process.py <input_folder> <output_folder> <format> [pattern]")
-        print(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
-        print("Example: python batch_process.py ./docs ./output pdf '*.docx'")
-        sys.exit(1)
-
-    # Get folder paths and format from arguments
-    input_folder = Path(sys.argv[1])
-    output_folder = Path(sys.argv[2])
-    to_format = sys.argv[3].lower()
-    pattern = sys.argv[4] if len(sys.argv) > 4 else "*"
-
     # Validate output format
-    if to_format not in SUPPORTED_FORMATS:
-        print(f"❌ Error: Unsupported format '{to_format}'")
-        print(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
-        sys.exit(1)
+    to_format_lower = to_format.lower()
+    if to_format_lower not in SUPPORTED_FORMATS:
+        typer.echo(f"❌ Error: Unsupported format '{to_format}'")
+        typer.echo(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
+        raise typer.Exit(code=1)
 
     # Validate and setup with custom pattern
     files = validate_and_setup(input_folder, output_folder, file_patterns=[pattern])
-    print(f"📋 Found {len(files)} file(s) matching '{pattern}'\n")
+    typer.echo(f"📋 Found {len(files)} file(s) matching '{pattern}'\n")
 
     # Initialize API client (loads credentials from .env)
     client = PlatformAPIClient()
@@ -72,32 +80,32 @@ def main() -> None:
     failed_count = 0
 
     for i, file_path in enumerate(files, 1):
-        print(f"[{i}/{len(files)}] Processing: {file_path.name}")
+        typer.echo(f"[{i}/{len(files)}] Processing: {file_path.name}")
 
         try:
             # Convert to target format
-            print(f"  🔄 Converting to {to_format.upper()}...")
-            converted = client.convert(file_path, to_format)
+            typer.echo(f"  🔄 Converting to {to_format_lower.upper()}...")
+            converted = client.convert(file_path, to_format_lower)
 
             # Save converted file
-            output_file = output_folder / f"{file_path.stem}.{to_format}"
+            output_file = output_folder / f"{file_path.stem}.{to_format_lower}"
             output_file.write_bytes(converted)
 
-            print(f"  ✅ Converted: {output_file.name}\n")
+            typer.echo(f"  ✅ Converted: {output_file.name}\n")
             success_count += 1
 
-        except Exception as e:  # noqa: BLE001
-            print(f"  ❌ FAILED: {e}\n")
+        except Exception as e:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+            typer.echo(f"  ❌ FAILED: {e}\n")
             failed_count += 1
 
     # Display summary
-    print("=" * 60)
-    print(f"✅ {success_count} file(s) converted to {to_format.upper()}")
+    typer.echo("=" * 60)
+    typer.echo(f"✅ {success_count} file(s) converted to {to_format_lower.upper()}")
     if failed_count > 0:
-        print(f"⚠️  {failed_count} file(s) FAILED to convert!")
-    print(f"📂 Output: {output_folder.absolute()}")
-    print("=" * 60)
+        typer.echo(f"⚠️  {failed_count} file(s) FAILED to convert!")
+    typer.echo(f"📂 Output: {output_folder.absolute()}")
+    typer.echo("=" * 60)
 
 
 if __name__ == "__main__":
-    main()
+    app()

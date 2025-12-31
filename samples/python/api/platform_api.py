@@ -38,7 +38,7 @@ class PlatformAPIClient(BaseOAuthClient):
         data = {"method": method, "params": json.dumps(params or {})}
 
         response = httpx.post(
-            f"{self.base_url}/{endpoint}", headers=headers, files=files, data=data
+            f"{self.settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
         )
 
         response.raise_for_status()
@@ -62,7 +62,7 @@ class PlatformAPIClient(BaseOAuthClient):
         data = {"method": method, "params": json.dumps(params or {})}
 
         response = httpx.post(
-            f"{self.base_url}/{endpoint}", headers=headers, files=files, data=data
+            f"{self.settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
         )
 
         response.raise_for_status()
@@ -138,7 +138,10 @@ class PlatformAPIClient(BaseOAuthClient):
             data = {"method": "merge", "params": "{}"}
 
             response = httpx.post(
-                f"{self.base_url}/transformations", headers=headers, files=files, data=data
+                f"{self.settings.platform_base_url}/transformations",
+                headers=headers,
+                files=files,
+                data=data,
             )
             response.raise_for_status()
             return response.content

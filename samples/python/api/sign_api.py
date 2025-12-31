@@ -31,7 +31,7 @@ class SignAPIClient(BaseOAuthClient):
 
         response = httpx.request(
             method=method,
-            url=f"{self.base_url}{endpoint}",
+            url=f"{self.settings.platform_base_url}{endpoint}",
             headers=headers,
             json=json_data,
             params=params,
@@ -44,7 +44,7 @@ class SignAPIClient(BaseOAuthClient):
             try:
                 error_detail = response.json()
                 print(f"   ❌ API Error Response: {error_detail}")
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: BLE001  # pylint: disable=broad-exception-caught
                 print(f"   ❌ API Error (no JSON): {response.text}")
             raise
 
@@ -57,7 +57,10 @@ class SignAPIClient(BaseOAuthClient):
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
         response = httpx.request(
-            method=method, url=f"{self.base_url}{endpoint}", headers=headers, params=params
+            method=method,
+            url=f"{self.settings.platform_base_url}{endpoint}",
+            headers=headers,
+            params=params,
         )
 
         response.raise_for_status()
@@ -126,7 +129,10 @@ class SignAPIClient(BaseOAuthClient):
             envelope_id: UUID of the envelope
         """
         headers = {"Authorization": f"Bearer {self._get_token()}"}
-        response = httpx.delete(f"{self.base_url}/sign/envelopes/{envelope_id}", headers=headers)
+        response = httpx.delete(
+            f"{self.settings.platform_base_url}/sign/envelopes/{envelope_id}",
+            headers=headers,
+        )
         response.raise_for_status()
 
     # ========== Document Management ==========
@@ -163,7 +169,9 @@ class SignAPIClient(BaseOAuthClient):
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
         response = httpx.post(
-            f"{self.base_url}/sign/envelopes/{envelope_id}/documents", headers=headers, files=files
+            f"{self.settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
+            headers=headers,
+            files=files,
         )
 
         response.raise_for_status()

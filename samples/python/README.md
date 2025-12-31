@@ -27,7 +27,12 @@ This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python pac
 
 4. Run the quickstart example:
    ```bash
-   python quickstart.py
+   uv run python quickstart.py
+   ```
+
+   Or use the Task command:
+   ```bash
+   task quickstart
    ```
 
 ### Option 2: Using pip
@@ -51,7 +56,7 @@ This project uses [uv](https://docs.astral.sh/uv/) for fast, reliable Python pac
 
 4. Run the quickstart example:
    ```bash
-   uv run python quickstart.py
+   python quickstart.py
    ```
 
 ## Development
@@ -151,7 +156,11 @@ api/
 
 ### Authentication
 ```bash
+# Run directly
 uv run python quickstart.py
+
+# Or use Task command
+task quickstart
 ```
 
 ### Convert Documents
@@ -159,8 +168,8 @@ uv run python quickstart.py
 # Convert DOCX to PDF
 uv run python convert_cli.py input.docx output.pdf pdf
 
-# Convert PDF to DOCX
-uv run python convert_cli.py input.pdf output.docx docx
+# Or use Task command
+task convert INPUT=input.docx OUTPUT=output.pdf FORMAT=pdf
 ```
 
 ### Extract Data
@@ -168,8 +177,8 @@ uv run python convert_cli.py input.pdf output.docx docx
 # Extract tables
 uv run python extract_data.py tables input.pdf output.json
 
-# Extract forms
-uv run python extract_data.py forms input.pdf output.json
+# Or use Task command
+task extract MODE=tables INPUT=input.pdf OUTPUT=output.json
 ```
 
 ### Redact Content
@@ -177,8 +186,8 @@ uv run python extract_data.py forms input.pdf output.json
 # Auto-detect and redact PII
 uv run python smart_redact_pii.py input_folder output_folder
 
-# Redact specific keywords
-uv run python redact_by_keyword.py input_folder output_folder "confidential" "secret"
+# Or use Task command
+task smart-redact INPUT_DIR=./input OUTPUT_DIR=./output
 ```
 
 ### Batch Operations
@@ -186,8 +195,8 @@ uv run python redact_by_keyword.py input_folder output_folder "confidential" "se
 # Convert all DOCX files to PDF
 uv run python batch_process.py ./input ./output pdf "*.docx"
 
-# Password protect all PDFs
-uv run python bulk_password_protect.py ./input ./output "MyPassword123"
+# Or use Task command
+task batch INPUT_DIR=./input OUTPUT_DIR=./output FORMAT=pdf PATTERN='*.docx'
 ```
 
 ## Using the API Client
