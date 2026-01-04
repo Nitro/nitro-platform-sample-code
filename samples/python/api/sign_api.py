@@ -29,9 +29,9 @@ class SignAPIClient(BaseOAuthClient):
         """Make authenticated API request returning JSON."""
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
-        response = httpx.request(
+        response = self._client.request(
             method=method,
-            url=f"{self.settings.platform_base_url}{endpoint}",
+            url=f"{self._settings.platform_base_url}{endpoint}",
             headers=headers,
             json=json_data,
             params=params,
@@ -56,9 +56,9 @@ class SignAPIClient(BaseOAuthClient):
         """Make authenticated API request returning binary data."""
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
-        response = httpx.request(
+        response = self._client.request(
             method=method,
-            url=f"{self.settings.platform_base_url}{endpoint}",
+            url=f"{self._settings.platform_base_url}{endpoint}",
             headers=headers,
             params=params,
         )
@@ -129,8 +129,8 @@ class SignAPIClient(BaseOAuthClient):
             envelope_id: UUID of the envelope
         """
         headers = {"Authorization": f"Bearer {self._get_token()}"}
-        response = httpx.delete(
-            f"{self.settings.platform_base_url}/sign/envelopes/{envelope_id}",
+        response = self._client.delete(
+            f"{self._settings.platform_base_url}/sign/envelopes/{envelope_id}",
             headers=headers,
         )
         response.raise_for_status()
@@ -168,8 +168,8 @@ class SignAPIClient(BaseOAuthClient):
 
         headers = {"Authorization": f"Bearer {self._get_token()}"}
 
-        response = httpx.post(
-            f"{self.settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
+        response = self._client.post(
+            f"{self._settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
             headers=headers,
             files=files,
         )
@@ -229,7 +229,6 @@ class SignAPIClient(BaseOAuthClient):
         Returns:
             Updated envelope with 'sent' status
         """
-        # The correct endpoint uses a colon before 'send-for-signing'
         return self._request("POST", f"/sign/envelopes/{envelope_id}:send-for-signing")
 
     def cancel_envelope(self, envelope_id: str) -> dict[str, Any]:
@@ -265,7 +264,6 @@ class SignAPIClient(BaseOAuthClient):
         Returns:
             PDF bytes of the sealed document
         """
-        # The correct endpoint uses a colon before 'download-sealed'
         return self._request_bytes("GET", f"/sign/envelopes/{envelope_id}:download-sealed")
 
     def download_original_envelope(self, envelope_id: str) -> bytes:
@@ -277,5 +275,4 @@ class SignAPIClient(BaseOAuthClient):
         Returns:
             Original document bytes
         """
-        # The correct endpoint uses a colon before 'download-original'
         return self._request_bytes("GET", f"/sign/envelopes/{envelope_id}:download-original")

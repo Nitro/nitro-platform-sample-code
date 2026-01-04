@@ -28,6 +28,7 @@ EXAMPLES:
   python convert_cli.py spreadsheet.xlsx data.pdf pdf
 """
 
+from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
@@ -35,8 +36,14 @@ import typer
 
 from api.platform_api import PlatformAPIClient
 
-# Supported output formats
-SUPPORTED_FORMATS = ["pdf", "docx", "xlsx", "pptx", "png"]
+class OutputFormat(str, Enum):
+    """Supported output formats for document conversion."""
+
+    PDF = "pdf"
+    DOCX = "docx"
+    XLSX = "xlsx"
+    PPTX = "pptx"
+    PNG = "png"
 
 
 app = typer.Typer()
@@ -47,23 +54,14 @@ def main(
     input_file: Annotated[Path, typer.Argument(help='Input file to convert')],
     output_file: Annotated[Path, typer.Argument(help='Output file path')],
     to_format: Annotated[
-        str,
-        typer.Argument(help=f"Target format. Supported: {', '.join(SUPPORTED_FORMATS)}"),
+        OutputFormat,
+        typer.Argument(help="Target format for conversion"),
     ],
 ) -> None:
     """Convert a document from one format to another using the Platform API."""
-    # Normalize format to lowercase
-    to_format = to_format.lower()
-
     # Validate input file exists
     if not input_file.exists():
         print(f'❌ Error: Input file not found: {input_file}')
-        raise typer.Exit(code=1)
-
-    # Validate output format
-    if to_format not in SUPPORTED_FORMATS:
-        print(f"❌ Error: Unsupported format '{to_format}'")
-        print(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
         raise typer.Exit(code=1)
 
     # Create output directory if needed
@@ -74,8 +72,8 @@ def main(
 
     try:
         # Convert document
-        print(f'🔄 Converting {input_file.name} to {to_format.upper()}...')
-        converted = client.convert(input_file, to_format)
+        print(f'🔄 Converting {input_file.name} to {to_format.value.upper()}...')
+        converted = client.convert(input_file, to_format.value)
 
         # Save converted file
         output_file.write_bytes(converted)

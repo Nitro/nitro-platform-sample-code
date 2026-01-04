@@ -125,8 +125,8 @@ def _upload_documents_to_envelope(
         token = sign_client.get_token()
         headers = {"Authorization": f"Bearer {token}"}
 
-        response = httpx.post(
-            f"{sign_client.settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
+        response = sign_client._client.post(
+            f"{sign_client._settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
             headers=headers,
             files=files,
         )

@@ -37,8 +37,8 @@ class PlatformAPIClient(BaseOAuthClient):
         files = {"file": (file_path.name, file_path.read_bytes(), mime_type)}
         data = {"method": method, "params": json.dumps(params or {})}
 
-        response = httpx.post(
-            f"{self.settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
+        response = self._client.post(
+            f"{self._settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
         )
 
         response.raise_for_status()
@@ -61,8 +61,8 @@ class PlatformAPIClient(BaseOAuthClient):
         files = {"file": (file_path.name, file_path.read_bytes(), mime_type)}
         data = {"method": method, "params": json.dumps(params or {})}
 
-        response = httpx.post(
-            f"{self.settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
+        response = self._client.post(
+            f"{self._settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
         )
 
         response.raise_for_status()
@@ -134,11 +134,11 @@ class PlatformAPIClient(BaseOAuthClient):
         # Open files with context manager
         opened_files = [fp.open("rb") for fp in file_paths]
         try:
-            files = [("file", f) for f in opened_files]
+            files = [("file", (f.name, f)) for f in opened_files]
             data = {"method": "merge", "params": "{}"}
 
-            response = httpx.post(
-                f"{self.settings.platform_base_url}/transformations",
+            response = self._client.post(
+                f"{self._settings.platform_base_url}/transformations",
                 headers=headers,
                 files=files,
                 data=data,

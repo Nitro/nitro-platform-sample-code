@@ -11,6 +11,9 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+TOKEN_EXPIRY_BUFFER_SECONDS = 60
+
+
 class TokenResponse(BaseModel):
     """OAuth2 token response model."""
 
@@ -42,31 +45,32 @@ class Settings(BaseSettings):
 class BaseOAuthClient:
     """Base class for API clients with OAuth2 authentication."""
 
-    settings: _SettingsProtocol = field(
+    _settings: _SettingsProtocol = field(
         default_factory=lambda: Settings()  # type: ignore[reportCallIssue]  # pylint: disable=unnecessary-lambda
     )
     _token: str | None = field(default=None, init=False)
     _token_expiry: float = field(default=0, init=False)
+    _client: httpx.Client = field(default_factory=httpx.Client, init=False)
 
     def _get_token(self) -> str:
         """Get or refresh OAuth2 access token."""
         if self._token and time.time() < self._token_expiry:
             return self._token
 
-        response = httpx.post(
-            f"{self.settings.platform_base_url}/oauth/token",
+        response = self._client.post(
+            f"{self._settings.platform_base_url}/oauth/token",
             json={
-                "clientID": self.settings.platform_client_id,
-                "clientSecret": self.settings.platform_client_secret,
+                "clientID": self._settings.platform_client_id,
+                "clientSecret": self._settings.platform_client_secret,
             },
         )
         response.raise_for_status()
 
         # Use Pydantic model for type-safe response parsing
-        token_data = TokenResponse.model_validate(response.json())
+        token_data = TokenResponse.model_validate_json(response.content)
 
         self._token = token_data.access_token
-        self._token_expiry = time.time() + token_data.expires_in - 60
+        self._token_expiry = time.time() + token_data.expires_in - TOKEN_EXPIRY_BUFFER_SECONDS
         return token_data.access_token
 
     def get_token(self) -> str:

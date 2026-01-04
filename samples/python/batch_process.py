@@ -29,6 +29,7 @@ EXAMPLES:
   python batch_process.py ./documents ./converted png "*"
 """
 
+from enum import Enum
 from pathlib import Path
 from typing import Annotated
 
@@ -37,8 +38,13 @@ import typer
 from api.platform_api import PlatformAPIClient
 from helper_functions.document_helpers import validate_and_setup
 
-# Supported output formats
-SUPPORTED_FORMATS = ["pdf", "docx", "xlsx", "pptx"]
+class OutputFormat(str, Enum):
+    """Supported output formats for document conversion."""
+
+    PDF = "pdf"
+    DOCX = "docx"
+    XLSX = "xlsx"
+    PPTX = "pptx"
 
 app = typer.Typer()
 
@@ -50,10 +56,8 @@ def main(
     ],
     output_folder: Annotated[Path, typer.Argument(help="Output folder for converted documents")],
     to_format: Annotated[
-        str,
-        typer.Argument(
-            help=f"Target format for conversion. Supported: {', '.join(SUPPORTED_FORMATS)}"
-        ),
+        OutputFormat,
+        typer.Argument(help="Target format for conversion"),
     ],
     pattern: Annotated[
         str,
@@ -61,13 +65,6 @@ def main(
     ] = "*",
 ) -> None:
     """Process multiple documents in batch, converting them to a specified format."""
-    # Validate output format
-    to_format_lower = to_format.lower()
-    if to_format_lower not in SUPPORTED_FORMATS:
-        typer.echo(f"❌ Error: Unsupported format '{to_format}'")
-        typer.echo(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
-        raise typer.Exit(code=1)
-
     # Validate and setup with custom pattern
     files = validate_and_setup(input_folder, output_folder, file_patterns=[pattern])
     typer.echo(f"📋 Found {len(files)} file(s) matching '{pattern}'\n")
@@ -84,11 +81,11 @@ def main(
 
         try:
             # Convert to target format
-            typer.echo(f"  🔄 Converting to {to_format_lower.upper()}...")
-            converted = client.convert(file_path, to_format_lower)
+            typer.echo(f"  🔄 Converting to {to_format.value.upper()}...")
+            converted = client.convert(file_path, to_format.value)
 
             # Save converted file
-            output_file = output_folder / f"{file_path.stem}.{to_format_lower}"
+            output_file = output_folder / f"{file_path.stem}.{to_format.value}"
             output_file.write_bytes(converted)
 
             typer.echo(f"  ✅ Converted: {output_file.name}\n")
@@ -100,7 +97,7 @@ def main(
 
     # Display summary
     typer.echo("=" * 60)
-    typer.echo(f"✅ {success_count} file(s) converted to {to_format_lower.upper()}")
+    typer.echo(f"✅ {success_count} file(s) converted to {to_format.value.upper()}")
     if failed_count > 0:
         typer.echo(f"⚠️  {failed_count} file(s) FAILED to convert!")
     typer.echo(f"📂 Output: {output_folder.absolute()}")
