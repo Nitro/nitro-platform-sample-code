@@ -29,23 +29,23 @@ EXAMPLE:
   python smart_redact_pii.py ../../test_files/test-pdfs ./output
 """
 
-import sys
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from api.platform_api import PlatformAPIClient
 from helper_functions.document_helpers import validate_and_setup
 
+app = typer.Typer()
 
-def main() -> None:
+
+@app.command()
+def main(
+    input_folder: Annotated[Path, typer.Argument(help='Input folder containing PDF documents')],
+    output_folder: Annotated[Path, typer.Argument(help='Output folder for redacted PDFs')],
+) -> None:
     """Automatically detect and redact PII (personally identifiable information) from PDFs."""
-    # Check command-line arguments
-    if len(sys.argv) != 3:
-        print("Usage: python smart_redact_pii.py <input_folder> <output_folder>")
-        sys.exit(1)
-
-    # Get folder paths from arguments
-    input_folder = Path(sys.argv[1])
-    output_folder = Path(sys.argv[2])
 
     # Validate and setup (only process PDF files)
     files = validate_and_setup(input_folder, output_folder, file_patterns=["*.pdf"])
@@ -116,5 +116,5 @@ def main() -> None:
     print("=" * 60)
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app()

@@ -45,9 +45,10 @@ OUTPUT STRUCTURE:
       ├── signed-documents/
 """
 
-import sys
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
+
+import typer
 
 from api.sign_api import SignAPIClient
 from helper_functions.sign_helpers import (
@@ -66,6 +67,9 @@ class EnvelopeNotSignedError(Exception):
     """Raised when an envelope was not signed in time."""
 
 
+app = typer.Typer()
+
+
 def _validate_and_setup_inputs(
     policies_folder: Path, employees_csv: Path
 ) -> tuple[Path, list[dict[str, str]], list[dict[str, Any]]]:
@@ -80,27 +84,27 @@ def _validate_and_setup_inputs(
     """
     # Validate inputs
     if not policies_folder.exists() or not policies_folder.is_dir():
-        print(f"❌ Policies folder not found: {policies_folder}")
-        sys.exit(1)
+        print(f'❌ Policies folder not found: {policies_folder}')
+        raise typer.Exit(code=1)
 
     if not employees_csv.exists():
-        print(f"❌ Employees CSV not found: {employees_csv}")
-        sys.exit(1)
+        print(f'❌ Employees CSV not found: {employees_csv}')
+        raise typer.Exit(code=1)
 
     # Display header
-    output_folder = Path("output")
-    print("=" * 60)
-    print("📝 SEND POLICIES TO EMPLOYEES")
-    print("=" * 60)
-    print(f"Policies: {policies_folder}")
-    print(f"Employees: {employees_csv}")
-    print(f"Output: {output_folder}")
-    print("=" * 60)
+    output_folder = Path('output')
+    print('=' * 60)
+    print('📝 SEND POLICIES TO EMPLOYEES')
+    print('=' * 60)
+    print(f'Policies: {policies_folder}')
+    print(f'Employees: {employees_csv}')
+    print(f'Output: {output_folder}')
+    print('=' * 60)
     print()
 
     # Load employees and documents
     employees = load_employees_from_csv(employees_csv)
-    print(f"👥 Found {len(employees)} employee(s)\n")
+    print(f'👥 Found {len(employees)} employee(s)\n')
 
     documents = load_policy_documents_from_folder(policies_folder)
 
@@ -133,54 +137,53 @@ def _process_employee_onboarding(
         EnvelopeNotSignedError: If envelope is not signed within timeout
         Exception: For other errors during processing
     """
-    name = employee["name"]
-    email = employee["email"]
+    name = employee['name']
+    email = employee['email']
 
-    print(f"\n[{employee_num}/{total_employees}] {name}")
+    print(f'\n[{employee_num}/{total_employees}] {name}')
 
     # Create employee-specific output folder
     employee_folder = output_folder / create_employee_folder_name(name)
     employee_folder.mkdir(parents=True, exist_ok=True)
 
     # Create envelope and upload documents
-    log_step("📝 Creating envelope...")
+    log_step('📝 Creating envelope...')
     envelope_id, document_ids = create_signature_envelope(sign_client, documents, name, email)
 
     # Add participant (signer)
-    log_step("👤 Adding signer...")
+    log_step('👤 Adding signer...')
     participant_id = sign_client.create_participant(
-        envelope_id, {"email": email, "role": "signer", "name": name}
-    )["ID"]
+        envelope_id, {'email': email, 'role': 'signer', 'name': name}
+    )['ID']
 
     # Add signature fields to all documents
-    log_step("✍️  Adding fields...")
+    log_step('✍️  Adding fields...')
     add_signature_fields_to_documents(sign_client, envelope_id, document_ids, participant_id)
 
     # Send and monitor envelope
-    log_step("📤 Sending...")
+    log_step('📤 Sending...')
     status = send_and_monitor_envelope(sign_client, envelope_id, email, timeout_minutes=60)
 
-    if status != "sealed":
-        raise EnvelopeNotSignedError(f"Envelope not signed: {status}")
+    if status != 'sealed':
+        raise EnvelopeNotSignedError(f'Envelope not signed: {status}')
 
     # Download signed documents
-    log_step("📥 Downloading...")
-    download_signed_document(sign_client, envelope_id, employee_folder, "signed-policies.zip")
+    log_step('📥 Downloading...')
+    download_signed_document(sign_client, envelope_id, employee_folder, 'signed-policies.zip')
 
-    print("  ✅ Completed\n")
+    print('  ✅ Completed\n')
 
 
-def main() -> None:
+@app.command()
+def main(
+    policies_folder: Annotated[
+        Path, typer.Argument(help='Folder containing policy PDF documents')
+    ],
+    employees_csv: Annotated[
+        Path, typer.Argument(help='CSV file with employee data (name,email columns)')
+    ],
+) -> None:
     """Send company policy documents to employees for electronic signature via Sign API."""
-    # Check command-line arguments
-    if len(sys.argv) != 3:
-        print("Usage: python employee_policy_onboarding.py <policies_folder> <employees_csv>")
-        sys.exit(1)
-
-    # Parse arguments
-    policies_folder = Path(sys.argv[1])
-    employees_csv = Path(sys.argv[2])
-
     try:
         # Validate inputs and load data
         output_folder, employees, documents = _validate_and_setup_inputs(
@@ -223,12 +226,12 @@ def main() -> None:
         print("=" * 60)
 
     except KeyboardInterrupt:
-        print("\n\n⚠️  Interrupted by user")
-        sys.exit(1)
+        print('\n\n⚠️  Interrupted by user')
+        raise typer.Exit(code=1) from None
     except Exception as e:  # noqa: BLE001
-        print(f"\n❌ Error: {e}")
-        sys.exit(1)
+        print(f'\n❌ Error: {e}')
+        raise typer.Exit(code=1) from None
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app()

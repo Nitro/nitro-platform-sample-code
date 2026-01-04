@@ -28,8 +28,10 @@ EXAMPLES:
   python convert_cli.py spreadsheet.xlsx data.pdf pdf
 """
 
-import sys
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from api.platform_api import PlatformAPIClient
 
@@ -37,55 +39,57 @@ from api.platform_api import PlatformAPIClient
 SUPPORTED_FORMATS = ["pdf", "docx", "xlsx", "pptx", "png"]
 
 
-def main() -> None:
-    """Convert a document from one format to another using the Platform API."""
-    # Check command-line arguments
-    if len(sys.argv) != 4:
-        print("Usage: python convert_cli.py <input_file> <output_file> <format>")
-        print(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
-        print("Example: python convert_cli.py document.docx document.pdf pdf")
-        sys.exit(1)
+app = typer.Typer()
 
-    # Get file paths and format from arguments
-    input_path = Path(sys.argv[1])
-    output_path = Path(sys.argv[2])
-    to_format = sys.argv[3].lower()
+
+@app.command()
+def main(
+    input_file: Annotated[Path, typer.Argument(help='Input file to convert')],
+    output_file: Annotated[Path, typer.Argument(help='Output file path')],
+    to_format: Annotated[
+        str,
+        typer.Argument(help=f"Target format. Supported: {', '.join(SUPPORTED_FORMATS)}"),
+    ],
+) -> None:
+    """Convert a document from one format to another using the Platform API."""
+    # Normalize format to lowercase
+    to_format = to_format.lower()
 
     # Validate input file exists
-    if not input_path.exists():
-        print(f"❌ Error: Input file not found: {input_path}")
-        sys.exit(1)
+    if not input_file.exists():
+        print(f'❌ Error: Input file not found: {input_file}')
+        raise typer.Exit(code=1)
 
     # Validate output format
     if to_format not in SUPPORTED_FORMATS:
         print(f"❌ Error: Unsupported format '{to_format}'")
         print(f"Supported formats: {', '.join(SUPPORTED_FORMATS)}")
-        sys.exit(1)
+        raise typer.Exit(code=1)
 
     # Create output directory if needed
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize API client (loads credentials from .env)
     client = PlatformAPIClient()
 
     try:
         # Convert document
-        print(f"🔄 Converting {input_path.name} to {to_format.upper()}...")
-        converted = client.convert(input_path, to_format)
+        print(f'🔄 Converting {input_file.name} to {to_format.upper()}...')
+        converted = client.convert(input_file, to_format)
 
         # Save converted file
-        output_path.write_bytes(converted)
+        output_file.write_bytes(converted)
 
         # Display success message
-        print("✅ Conversion successful!")
-        print(f"📄 Input:  {input_path.name} ({input_path.stat().st_size:,} bytes)")
-        print(f"📄 Output: {output_path.name} ({len(converted):,} bytes)")
-        print(f"📂 Saved to: {output_path.absolute()}")
+        print('✅ Conversion successful!')
+        print(f'📄 Input:  {input_file.name} ({input_file.stat().st_size:,} bytes)')
+        print(f'📄 Output: {output_file.name} ({len(converted):,} bytes)')
+        print(f'📂 Saved to: {output_file.absolute()}')
 
     except Exception as e:  # noqa: BLE001
-        print(f"❌ Conversion FAILED: {e}")
-        sys.exit(1)
+        print(f'❌ Conversion FAILED: {e}')
+        raise typer.Exit(code=1) from None
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app()

@@ -30,8 +30,10 @@ EXAMPLE:
   python prepare_pdf_for_distribution.py ../../test_files/test-batch ./output
 """
 
-import sys
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from api.platform_api import PlatformAPIClient
 from helper_functions.document_helpers import validate_and_setup
@@ -40,16 +42,15 @@ from helper_functions.document_helpers import validate_and_setup
 PROPERTIES_TO_REMOVE = ["title", "author", "subject", "keywords", "creator", "producer"]
 
 
-def main() -> None:
-    """Prepare documents for distribution by converting to PDF and removing metadata."""
-    # Check command-line arguments
-    if len(sys.argv) != 3:
-        print("Usage: python prepare_pdf_for_distribution.py <input_folder> <output_folder>")
-        sys.exit(1)
+app = typer.Typer()
 
-    # Get folder paths from arguments
-    input_folder = Path(sys.argv[1])
-    output_folder = Path(sys.argv[2])
+
+@app.command()
+def main(
+    input_folder: Annotated[Path, typer.Argument(help='Input folder containing documents')],
+    output_folder: Annotated[Path, typer.Argument(help='Output folder for prepared PDFs')],
+) -> None:
+    """Prepare documents for distribution by converting to PDF and removing metadata."""
 
     # Validate and setup
     files = validate_and_setup(input_folder, output_folder)
@@ -108,5 +109,5 @@ def main() -> None:
     print("=" * 60)
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app()

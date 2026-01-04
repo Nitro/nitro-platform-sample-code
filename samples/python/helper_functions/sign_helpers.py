@@ -9,7 +9,7 @@ import json
 import time
 import zipfile
 from datetime import UTC, datetime
-from pathlib import Path  # noqa: TC003
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import httpx
@@ -126,7 +126,7 @@ def _upload_documents_to_envelope(
         headers = {"Authorization": f"Bearer {token}"}
 
         response = httpx.post(
-            f"{sign_client.base_url}/sign/envelopes/{envelope_id}/documents",
+            f"{sign_client.settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
             headers=headers,
             files=files,
         )

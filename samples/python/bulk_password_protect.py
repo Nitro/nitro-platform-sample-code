@@ -29,29 +29,28 @@ EXAMPLE:
   python bulk_password_protect.py ../../test_files/test-pdfs ./output MySecureP@ss123
 """
 
-import sys
 from pathlib import Path
+from typing import Annotated
+
+import typer
 
 from api.platform_api import PlatformAPIClient
 from helper_functions.document_helpers import validate_and_setup
 
+app = typer.Typer()
 
-def main() -> None:
+
+@app.command()
+def main(
+    input_folder: Annotated[Path, typer.Argument(help='Input folder containing PDF documents')],
+    output_folder: Annotated[Path, typer.Argument(help='Output folder for protected PDFs')],
+    password: Annotated[str, typer.Argument(help='Password for protection (min 6 characters)')],
+) -> None:
     """Apply password protection to all PDF files in a directory."""
-    # Check command-line arguments
-    if len(sys.argv) != 4:
-        print("Usage: python bulk_password_protect.py <input_folder> <output_folder> <password>")
-        sys.exit(1)
-
-    # Get folder paths and password from arguments
-    input_folder = Path(sys.argv[1])
-    output_folder = Path(sys.argv[2])
-    password = sys.argv[3]
-
     # Validate password strength
     if len(password) < 6:
-        print("❌ Error: Password must be at least 6 characters long")
-        sys.exit(1)
+        print('❌ Error: Password must be at least 6 characters long')
+        raise typer.Exit(code=1)
 
     # Validate and setup (only process PDF files)
     files = validate_and_setup(input_folder, output_folder, file_patterns=["*.pdf"])
@@ -93,5 +92,5 @@ def main() -> None:
     print("=" * 60)
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app()

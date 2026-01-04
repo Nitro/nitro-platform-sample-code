@@ -59,7 +59,7 @@ lint.select = [
   "YTT",  # flake8-2020
   "T10",  # debugger statements
 ]
-lint.ignore = ["S101", "S311", "TRY003", "TC006"]
+lint.ignore = ["S101", "S311", "TRY003", "TC003", "TC006"]
 lint.flake8-type-checking.strict = true
 
 [tool.pyright]

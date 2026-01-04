@@ -5,7 +5,7 @@ Common helper utilities for document processing scripts.
 from __future__ import annotations
 
 import sys
-from pathlib import Path  # noqa: TC003
+from pathlib import Path
 
 
 def validate_and_setup(

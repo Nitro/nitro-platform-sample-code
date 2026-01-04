@@ -29,7 +29,7 @@ EXAMPLES:
   python batch_process.py ./documents ./converted png "*"
 """
 
-from pathlib import Path  # noqa: TC003
+from pathlib import Path
 from typing import Annotated
 
 import typer
