@@ -3,18 +3,23 @@
 📊 DOCUMENT DATA EXTRACTION
 ============================
 
-The script exemplifies a typical workflow for intelligent document data extraction.
-As a data analyst, you need to extract structured
-data from PDF documents - whether form fields from applications, surveys, and
-questionnaires, or table data from reports, invoices, and financial statements.
-Manual data entry is error-prone and time-consuming, especially when processing
-hundreds of documents for analysis or database import.
+This script shows how to automatically extract useful data from PDF documents.
 
-This workflow automates data extraction using AI-powered document understanding.
-The script analyzes PDF documents and intelligently identifies and extracts either
-form fields (with field names and values) or table structures (with rows, columns,
-and cell contents). The extracted data is saved as structured JSON, ready for
-immediate integration with databases, spreadsheets, or analytics pipelines.
+If you work with PDFs, you often need to pull structured information from
+them. This might include form fields from applications, surveys, or
+questionnaires, as well as table data from reports, invoices, or financial
+statements. Entering this information by hand can be slow and can lead to
+mistakes, especially when you are processing a large number of documents.
+
+This workflow makes the process faster and easier by automating data
+extraction. The script analyzes PDF files and uses intelligent document
+analysis to find and extract the information you need. It can capture form
+fields with their names and values, or detect tables and extract their rows,
+columns, and cell contents.
+
+The extracted data is saved in a structured JSON format. This makes it
+easy to load into databases, spreadsheets, or analytics tools so you can
+start working with the data right away.
 
 DATA EXTRACTION FEATURES:
   ✓ AI-powered form field extraction
