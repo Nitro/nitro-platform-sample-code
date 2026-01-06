@@ -3,19 +3,23 @@
 🔍 KEYWORD-BASED REDACTION
 ===========================
 
-The script exemplifies a typical workflow for targeted content redaction.
-As a compliance officer, you need to redact specific
-sensitive terms from documents before external sharing or public disclosure.
-Whether removing client names, project codenames, financial figures, or
-proprietary terminology, manually searching through pages and applying redactions
-is tedious and risks missing instances, potentially exposing confidential information.
+This script shows a standard workflow for targeted content redaction.
 
-This workflow automates keyword-based redaction. The script searches the entire
-PDF document for all specified keywords and phrases, identifies their exact
-locations across all pages, then automatically applies permanent redactions to
-remove them. Multiple keywords can be processed in a single pass, ensuring
-comprehensive coverage. The result is a thoroughly redacted document ready for
-safe distribution.
+As a compliance officer, you must remove sensitive information from
+documents before you share them outside the organization or release them to
+the public. This information can include client names, project code names,
+financial values, or proprietary terms. Finding and removing this content
+by hand can be slow and difficult. You can also miss some instances, which
+can expose confidential information.
+
+This workflow automates keyword-based redaction. The script searches the
+full PDF document for all specified keywords and phrases. It finds each
+instance on every page. The script then applies permanent redactions to
+remove the content.
+
+You can process multiple keywords in one run that ensures full and
+consistent coverage. The result is a clean, redacted document that is safe
+to share.
 
 KEYWORD REDACTION FEATURES:
   ✓ Multi-keyword search (process multiple terms)

@@ -12,8 +12,6 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import httpx
-
 if TYPE_CHECKING:
     from api.sign_api import SignAPIClient
 

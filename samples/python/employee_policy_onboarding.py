@@ -3,24 +3,33 @@
 📝 EMPLOYEE POLICY ONBOARDING
 ==============================
 
-This script exemplifies a typical HR onboarding workflow for new employees.
-As an HR professional, it's necessary to ensure all new hires review and sign
-required company policies before their start date. Manual distribution and
-tracking of signatures is time-consuming and error-prone, especially when
-onboarding multiple employees simultaneously.
+HR staff must make sure that all new employees review and sign required
+company policies before their start date. Manual distribution and manual
+tracking of signed documents takes a lot of time and can cause errors. This
+is especially true when you onboard many employees at the same time.
 
-This workflow automates policy distribution and signature collection. The script
-processes each new employee individually - for every person in the CSV file, it
-creates a signature envelope containing all company policy documents, sends it
-via email with signature fields pre-configured, monitors the signing status, and
-automatically downloads the signed documents once completed. Each employee's
-signed policies are organized in their own folder, creating an audit-ready
-archive of onboarding documentation.
+This workflow automates the distribution of policies and the collection of signatures.
+
+The script processes one employee at a time. For each employee listed in the CSV file, the script:
+
+Creates a signature envelope that contains all required company policy documents
+
+Sends the envelope by email with signature fields already set
+
+Tracks the signature status
+
+Downloads the signed documents when the signing process is complete
+
+The script saves each employee's signed documents in a separate folder.
+This creates an organized and audit-ready record of onboarding
+documents.
 
 
-NOTE: To run this script and see the complete workflow, you must provide a CSV file
-with valid employee names and email addresses. The script will send actual signature
-requests to these email addresses and wait for them to be signed.
+NOTE: To run this script and view the full workflow, you must provide a
+CSV file with valid employee names and email addresses. The script sends
+real signature requests to these email addresses and waits for the
+employees to sign the documents.
+
 
 EMPLOYEE CSV FORMAT:
   name,email

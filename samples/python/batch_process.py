@@ -3,19 +3,21 @@
 📁 BATCH DOCUMENT CONVERSION
 =============================
 
-The script exemplifies a typical workflow for document format standardization.
-As a IT administrator, it's essential to convert
-large collections of documents into standardized formats for archival, compliance,
-or system integration purposes. Manually converting individual files through desktop
-applications is time-consuming and impractical for large document sets, often leading
-to inconsistent results and wasted effort.
+This script shows a standard workflow for document format standardization.
 
-This workflow automates bulk document conversion. The script processes files
-individually - for every document matching the specified pattern in the input folder,
-it converts the file to the target format (PDF, DOCX, XLSX, PNG, JPG, etc.) using
-high-fidelity conversion algorithms. Each converted file is saved to the output
-folder with the same base name but the new format extension, resulting in a
-complete batch of standardized documents.
+As an IT administrator, you must convert many documents to standard
+formats for archiving, compliance, or system integration. Manual conversion
+with desktop applications takes a long time and is not practical for large
+document sets. It can also cause inconsistent results and wasted effort.
+
+This workflow automates bulk document conversion. The script scans the input
+folder for files that match a specified pattern and processes each file one
+by one. For each document, the script converts the file to the target format,
+such as PDF, DOCX, XLSX, PNG, or JPG, using high-quality conversion methods.
+
+Each converted file is saved in the output folder with the same base name and a new
+format extension. The result is a complete set of standardized documents that are
+ready for use.
 
 BATCH CONVERSION FEATURES:
   ✓ Multiple format support (PDF, DOCX, XLSX, PNG, JPG, etc.)
@@ -37,6 +39,7 @@ import typer
 
 from api.platform_api import PlatformAPIClient
 from helper_functions.document_helpers import validate_and_setup
+
 
 class OutputFormat(str, Enum):
     """Supported output formats for document conversion."""
