@@ -16,3 +16,8 @@ __pycache__/
 .idea/
 *.swp
 *.swo
+
+# Serena AI Assistant
+.serena/
+
+.plataform-integrations/

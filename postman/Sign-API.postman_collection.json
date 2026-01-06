@@ -1,0 +1,604 @@
+{
+	"info": {
+		"_postman_id": "79ced7f0-a852-414f-ac60-0c762a02263b",
+		"name": "Nitro Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23623766"
+	},
+	"item": [
+		{
+			"name": "Envelope",
+			"item": [
+				{
+					"name": "Document",
+					"item": [
+						{
+							"name": "List Documents by Envelope ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/documents",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"documents"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Document by ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/documents/<documentID>",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"documents",
+										"<documentID>"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Document by ID",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/documents/<documentID>",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"documents",
+										"<documentID>"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Document by Envelope ID",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "metadata",
+											"value": "{\n  \"name\": \"Sample doc\"\n}",
+											"type": "text"
+										},
+										{
+											"key": "payload",
+											"type": "file",
+											"src": "example-file.pdf"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/documents",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"documents"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Fields",
+					"item": [
+						{
+							"name": "Get Document by ID Copy",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"boundingBox\": [0, 0, 200, 40],\n    \"participantID\": \"<participant_id\",\n    \"type\": \"field_type\",\n    \"page\": 1,\n    \"required\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/documents/<documentID>/fields",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"documents",
+										"<documentID>",
+										"fields"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Participant",
+					"item": [
+						{
+							"name": "Create Participant by Envelope ID",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"role\": \"<participant_role>\",\n    \"email\": \"<participant_email>\",\n    \"authentication\": {\n        \"type\": \"AccessCode\",\n        \"accessCode\": \"<access_code>\"\n    }\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/participants",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"participants"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Participants by Envelope ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseURL}}/sign/envelopes/<envelopeID>/participants",
+									"host": [
+										"{{baseURL}}"
+									],
+									"path": [
+										"sign",
+										"envelopes",
+										"<envelopeID>",
+										"participants"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "List Envelope",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseURL}}/sign/envelopes",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"envelopes"
+							],
+							"query": [
+								{
+									"key": "pageAfter",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "pageBefore",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Envelope by ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/envelopes/<envelopeID>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"envelopes",
+								"<envelopeID>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Envelope",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"<your_envelope_name>\",\n    \"mode\": \"<signing_envelope_mode>\",\n    \"notification\": {\n        \"subject\": \"<email_subject>\",\n        \"body\": \"<email_body>\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/envelopes",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"envelopes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Envelope",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"<your_envelope_name>\",\n    \"mode\": \"<signing_envelope_mode>\",\n    \"notification\": {\n        \"subject\": \"<email_subject>\",\n        \"body\": \"<email_body>\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/envelopes/<envelopeID>",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"envelopes",
+								"<envelopeID>"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download Sealed Envelope",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/envelopes/<envelopeID>:download-sealed",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"envelopes",
+								"<envelopeID>:download-sealed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download Original Envelope",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/envelopes/<envelopeID>:download-original",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"envelopes",
+								"<envelopeID>:download-original"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Get Access Token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cliendID\": \"<application_client_id>\",\n    \"clientSecret\": \"<application_client_secret_key>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseURL}}/oauth/token",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Conversions",
+			"item": [
+				{
+					"name": "Get Converted File by Job ID",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/conversions/<jobID>:download-converted",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"conversions",
+								"<jobID>:download-converted"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Conversion Job Status",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/conversions/<jobID>/status",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"conversions",
+								"<jobID>",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Convert File to PDF",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "example-file.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseURL}}/sign/conversions",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"sign",
+								"conversions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "https://api.gonitro.dev"
+		},
+		{
+			"key": "token",
+			"value": "<access_token>"
+		}
+	]
+}

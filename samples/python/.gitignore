@@ -2,8 +2,8 @@
 .env
 
 # Temporary test files and outputs
-temp/
 output/
+test_output/
 
 # Python
 __pycache__/
@@ -11,3 +11,12 @@ __pycache__/
 *.pyo
 *.pyd
 .Python
+*.egg-info/
+
+# uv
+.venv/
+uv.lock
+
+# Ruff cache
+.ruff_cache/
+
