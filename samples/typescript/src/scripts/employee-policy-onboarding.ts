@@ -1,49 +1,48 @@
 #!/usr/bin/env node
 /**
- * 📝 EMPLOYEE POLICY ONBOARDING
- * ==============================
- *
- * This script exemplifies a typical HR onboarding workflow for new employees.
- * As an HR professional, it's necessary to ensure all new hires review and sign
- * required company policies before their start date. Manual distribution and
- * tracking of signatures is time-consuming and error-prone, especially when
- * onboarding multiple employees simultaneously.
- *
- * This workflow automates policy distribution and signature collection. The script
- * processes each new employee individually - for every person in the CSV file, it
- * creates a signature envelope containing all company policy documents, sends it
- * via email with signature fields pre-configured, monitors the signing status, and
- * automatically downloads the signed documents once completed. Each employee's
- * signed policies are organized in their own folder, creating an audit-ready
- * archive of onboarding documentation.
- *
- * NOTE: To run this script and see the complete workflow, you must provide a CSV file
- * with valid employee names and email addresses. The script will send actual signature
- * requests to these email addresses and wait for them to be signed.
- *
- * EMPLOYEE CSV FORMAT:
- *   name,email
- *   John Doe,john.doe@company.com
- *   Jane Smith,jane.smith@company.com
- *   Bob Johnson,bob.johnson@company.com
- *
- * USAGE:
- *   npm run employee-policy -- <policies_folder> <employees_csv>
- *   # or with tsx:
- *   tsx src/scripts/employee-policy-onboarding.ts <policies_folder> <employees_csv>
- *
- * EXAMPLE:
- *   npm run employee-policy -- ./policies ./new_hires_jan2025.csv
- *
- * OUTPUT STRUCTURE:
- *   output/
- *   ├── john-doe/
- *   │   ├── signed-documents/
- *   │       ├── code-of-conduct-signed.pdf
- *   │       ├── confidentiality-agreement-signed.pdf
- *   │       └── audit-trail.pdf
- *   ├── jane-smith/
- *       ├── signed-documents/
+📝 EMPLOYEE POLICY ONBOARDING
+==============================
+
+This script exemplifies a typical HR onboarding workflow for new employees.
+As an HR professional, it's necessary to ensure all new hires review and sign
+required company policies before their start date. Manual distribution and
+tracking of signatures is time-consuming and error-prone, especially when
+onboarding multiple employees simultaneously.
+
+This workflow automates policy distribution and signature collection. The script
+processes each new employee individually - for every person in the CSV file, it
+creates a signature envelope containing all company policy documents, sends it
+via email with signature fields pre-configured, monitors the signing status, and
+automatically downloads the signed documents once completed. Each employee's
+signed policies are organized in their own folder, creating an audit-ready
+archive of onboarding documentation.
+
+
+NOTE: To run this script and see the complete workflow, you must provide a CSV file
+with valid employee names and email addresses. The script will send actual signature
+requests to these email addresses and wait for them to be signed.
+
+EMPLOYEE CSV FORMAT:
+  name,email
+  John Doe,john.doe@company.com
+  Jane Smith,jane.smith@company.com
+  Bob Johnson,bob.johnson@company.com
+
+USAGE:
+  npm run employee-policy -- <policies_folder> <employees_csv>
+
+  EXAMPLE:
+    npm run employee-policy -- ./policies ./new_hires_jan2025.csv
+
+  OUTPUT STRUCTURE:
+    output/
+     ├── john-doe/
+     │   ├── signed-documents/
+     │       ├── code-of-conduct-signed.pdf
+     │       ├── confidentiality-agreement-signed.pdf
+     │       └── audit-trail.pdf
+     ├── jane-smith/
+     │   ├── signed-documents/
  */
 
 import { program } from 'commander';

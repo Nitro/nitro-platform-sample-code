@@ -1,39 +1,38 @@
 #!/usr/bin/env node
 /**
- * 📊 DOCUMENT DATA EXTRACTION
- * ============================
- *
- * The script exemplifies a typical workflow for intelligent document data extraction.
- * As a data analyst, you need to extract structured data from PDF documents - whether
- * form fields from applications, surveys, and questionnaires, or table data from
- * reports, invoices, and financial statements. Manual data entry is error-prone and
- * time-consuming, especially when processing hundreds of documents for analysis or
- * database import.
- *
- * This workflow automates data extraction using AI-powered document understanding.
- * The script analyzes PDF documents and intelligently identifies and extracts either
- * form fields (with field names and values) or table structures (with rows, columns,
- * and cell contents). The extracted data is saved as structured JSON, ready for
- * immediate integration with databases, spreadsheets, or analytics pipelines.
- *
- * DATA EXTRACTION FEATURES:
- *   ✓ AI-powered form field extraction
- *   ✓ Intelligent table detection and extraction
- *   ✓ Structured JSON output format
- *   ✓ High accuracy recognition
- *
- * USAGE:
- *   npm run extract -- <mode> <input_pdf> <output_json>
- *   # or with tsx:
- *   tsx src/scripts/extract-data.ts <mode> <input_pdf> <output_json>
- *
- * MODES:
- *   forms  - Extract form fields (name-value pairs)
- *   tables - Extract table data (rows and columns)
- *
- * EXAMPLES:
- *   npm run extract -- forms application.pdf data.json
- *   npm run extract -- tables invoice.pdf tables.json
+📊 DOCUMENT DATA EXTRACTION
+============================
+
+The script exemplifies a typical workflow for intelligent document data extraction.
+As a data analyst, you need to extract structured
+data from PDF documents - whether form fields from applications, surveys, and
+questionnaires, or table data from reports, invoices, and financial statements.
+Manual data entry is error-prone and time-consuming, especially when processing
+hundreds of documents for analysis or database import.
+
+This workflow automates data extraction using AI-powered document understanding.
+The script analyzes PDF documents and intelligently identifies and extracts either
+form fields (with field names and values) or table structures (with rows, columns,
+and cell contents). The extracted data is saved as structured JSON, ready for
+immediate integration with databases, spreadsheets, or analytics pipelines.
+
+DATA EXTRACTION FEATURES:
+  ✓ AI-powered form field extraction
+  ✓ Intelligent table detection and extraction
+  ✓ Structured JSON output format
+  ✓ High accuracy recognition
+  
+  
+USAGE:
+   npm run extract -- <mode> <input_pdf> <output_json>
+  
+MODES:
+   forms  - Extract form fields (name-value pairs)
+   tables - Extract table data (rows and columns)
+ 
+EXAMPLES:
+   npm run extract -- forms application.pdf data.json
+   npm run extract -- tables invoice.pdf tables.json
  */
 
 import { program } from 'commander';

@@ -1,35 +1,32 @@
 #!/usr/bin/env node
 /**
- * 🔒 PREPARE PDF FOR DISTRIBUTION
- * ================================
- *
- * The script exemplifies a typical workflow of marketing brochure distribution.
- * As a marketing professional, it's necessary to share company brochures externally
- * while ensuring they comply with corporate distribution standards. Word document
- * properties can expose internal information such as author names, template paths,
- * revision history, and company file structures that should remain confidential.
- *
- * This workflow automates compliant document preparation. The script processes each
- * file individually - for every brochure in the input folder, it converts the Word
- * document into PDF format, then compresses the file to reduce size and optimize
- * transmission, and finally removes all metadata properties to ensure privacy and
- * confidentiality. Each processed file is saved to the output folder, resulting in
- * distribution-ready brochures.
- *
- * COMPANY DISTRIBUTION STANDARDS:
- *   ✓ PDF format (prevents editing)
- *   ✓ Compressed (optimized file size)
- *   ✓ Properties removed (no metadata exposure)
- *   ⏳ Annotations removed (feature in development)
- *   ⏳ Accessibility enabled (feature in development)
- *
- * USAGE:
- *   npm run prepare-pdf -- <input_folder> <output_folder>
- *   # or with tsx:
- *   tsx src/scripts/prepare-pdf-for-distribution.ts <input_folder> <output_folder>
- *
- * EXAMPLE:
- *   npm run prepare-pdf -- ../../test_files/test-batch ./output
+🔒 PREPARE PDF FOR DISTRIBUTION
+================================
+
+The script exemplifies a typical workflow of marketing brochure distribution.
+As a marketing professional, it's necessary to share company brochures externally
+while ensuring they comply with corporate distribution standards. Word document
+properties can expose internal information such as author names, template paths,
+revision history, and company file structures that should remain confidential.
+
+This workflow automates compliant document preparation. The script processes each
+file individually - for every brochure in the input folder, it converts the Word
+document into PDF format, then compresses the file to reduce size and optimize
+transmission, and finally removes all metadata properties to ensure privacy and
+confidentiality. Each processed file is saved to the output folder, resulting in
+distribution-ready brochures.
+
+COMPANY DISTRIBUTION STANDARDS:
+  ✓ PDF format (prevents editing)
+  ✓ Compressed (optimized file size)
+  ✓ Properties removed (no metadata exposure)
+  ⏳ Annotations removed (feature in development)
+  ⏳ Accessibility enabled (feature in development)
+USAGE:
+   npm run prepare-pdf -- <input_folder> <output_folder>
+
+EXAMPLE:
+   npm run prepare-pdf -- ../../test_files/test-batch ./output
  */
 
 import { program } from 'commander';

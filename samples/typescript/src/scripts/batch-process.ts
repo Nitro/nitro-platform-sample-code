@@ -1,34 +1,32 @@
 #!/usr/bin/env node
 /**
- * 📁 BATCH DOCUMENT CONVERSION
- * =============================
- *
- * The script exemplifies a typical workflow for document format standardization.
- * As an IT administrator, it's essential to convert large collections of documents
- * into standardized formats for archival, compliance, or system integration purposes.
- * Manually converting individual files through desktop applications is time-consuming
- * and impractical for large document sets, often leading to inconsistent results and
- * wasted effort.
- *
- * This workflow automates bulk document conversion. The script processes files
- * individually - for every document matching the specified pattern in the input folder,
- * it converts the file to the target format (PDF, DOCX, XLSX, PNG, JPG, etc.) using
- * high-fidelity conversion algorithms. Each converted file is saved to the output
- * folder with the same base name but the new format extension, resulting in a
- * complete batch of standardized documents.
- *
- * BATCH CONVERSION FEATURES:
- *   ✓ Multiple format support (PDF, DOCX, XLSX, PNG, JPG, etc.)
- *   ✓ Flexible file pattern matching (*.docx, *.xlsx, *.pptx, *.pdf.)
- *
- * USAGE:
- *   npm run batch -- <input_folder> <output_folder> <format> [pattern]
- *   # or with tsx:
- *   tsx src/scripts/batch-process.ts <input_folder> <output_folder> <format> [pattern]
- *
- * EXAMPLES:
- *   npm run batch -- ../../test_files/test-batch ./output pdf "*.docx"
- *   npm run batch -- ./documents ./converted png "*"
+ 📁 BATCH DOCUMENT CONVERSION
+=============================
+
+The script exemplifies a typical workflow for document format standardization.
+As a IT administrator, it's essential to convert
+large collections of documents into standardized formats for archival, compliance,
+or system integration purposes. Manually converting individual files through desktop
+applications is time-consuming and impractical for large document sets, often leading
+to inconsistent results and wasted effort.
+
+This workflow automates bulk document conversion. The script processes files
+individually - for every document matching the specified pattern in the input folder,
+it converts the file to the target format (PDF, DOCX, XLSX, PNG, JPG, etc.) using
+high-fidelity conversion algorithms. Each converted file is saved to the output
+folder with the same base name but the new format extension, resulting in a
+complete batch of standardized documents.
+
+BATCH CONVERSION FEATURES:
+  ✓ Multiple format support (PDF, DOCX, XLSX, PNG, JPG, etc.)
+  ✓ Flexible file pattern matching (*.docx, *.xlsx, *.pptx, *.pdf.)
+
+USAGE:
+   npm run batch -- <input_folder> <output_folder> <format> [pattern]
+  
+EXAMPLES:
+   npm run batch -- ../../test_files/test-batch ./output pdf "*.docx"
+   npm run batch -- ./documents ./converted png "*"
  */
 
 import { program } from 'commander';

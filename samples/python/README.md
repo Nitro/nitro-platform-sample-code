@@ -316,9 +316,162 @@ python convert_cli.py ../../test_files/test-batch/Analysis.docx /tmp/output.pdf 
 ./test_all.sh
 ```
 
-## Sample Files
+## Testing with Sample Files
+
+The repository includes test files you can use to try out the scripts. All test files are located in the `../../test_files/` directory (relative to the Python samples folder).
+
+### Quick Test Commands
+
+#### 1. Test Authentication
+```bash
+uv run python quickstart.py
+# Expected: ✅ Authentication successful! Token: eyJ0...
+```
+
+#### 2. Convert Single Document
+```bash
+# Convert Word document to PDF
+uv run python convert_cli.py ../../test_files/test-batch/Analysis.docx output/test_output.pdf pdf
+
+# Convert Excel to PDF
+uv run python convert_cli.py ../../test_files/test-batch/Feedback.xlsx output/test_output.pdf pdf
+
+# Convert PowerPoint to PNG
+uv run python convert_cli.py ../../test_files/SamplePPTX.pptx output/test_output.png png
+```
+
+#### 3. Batch Document Conversion
+```bash
+# Convert all Word documents in test-batch to PDF
+uv run python batch_process.py \
+  ../../test_files/test-batch \
+  output/batch_results \
+  pdf \
+  "*.docx"
+
+# Convert all Excel files
+uv run python batch_process.py \
+  ../../test_files/test-batch \
+  output/batch_results \
+  pdf \
+  "*.xlsx"
+```
+
+#### 4. Extract Data from PDFs
+```bash
+# Extract form fields from student loan application
+uv run python extract_data.py \
+  forms \
+  "../../test_files/test-pdfs/BOB - Student-Loan-Application-Form.pdf" \
+  output/forms_output.json
+
+# Extract tables from PDF
+uv run python extract_data.py \
+  tables \
+  "../../test_files/test-pdfs/Sample Tables.pdf" \
+  output/tables_output.json
+```
+
+#### 5. Smart PII Redaction
+```bash
+# Automatically detect and redact PII from PDFs
+uv run python smart_redact_pii.py \
+  ../../test_files/test-pdfs \
+  output/pii_redacted
+```
+
+#### 6. Keyword-Based Redaction
+```bash
+# Redact specific keywords from resume
+uv run python redact_by_keyword.py \
+  ../../test_files/test-pdfs/SampleResume.pdf \
+  output/redacted.pdf \
+  "resume" "contact"
+```
+
+#### 7. Bulk Password Protection
+```bash
+# Password protect all PDFs in test-pdfs folder
+uv run python bulk_password_protect.py \
+  ../../test_files/test-pdfs \
+  output/protected \
+  "SecurePass123"
+```
+
+#### 8. Prepare PDFs for Distribution
+```bash
+# Convert marketing brochures to optimized PDFs with metadata removed
+uv run python prepare_pdf_for_distribution.py \
+  ../../test_files/pdf-distribution \
+  output/distribution
+```
+
+#### 9. Employee Policy Onboarding (Sign API)
+```bash
+# Send company policies for signature to employees
+uv run python employee_policy_onboarding.py \
+  ../../test_files/test-sign \
+  ../../test_files/test-sign/employees.csv
+
+# Note: This sends real signature requests to email addresses in the CSV!
+# Check the CSV file first: ../../test_files/test-sign/employees.csv
+```
+
+### Using Task Commands
+
+All the above can also be run using Task commands for convenience:
+
+```bash
+# Convert
+task convert INPUT=../../test_files/test-batch/Analysis.docx OUTPUT=output/test.pdf FORMAT=pdf
+
+# Batch process
+task batch INPUT_DIR=../../test_files/test-batch OUTPUT_DIR=output/batch FORMAT=pdf PATTERN='*.docx'
+
+# Extract data
+task extract MODE=tables INPUT="../../test_files/test-pdfs/Sample Tables.pdf" OUTPUT=output/tables.json
+
+# Smart redact
+task smart-redact INPUT_DIR=../../test_files/test-pdfs OUTPUT_DIR=output/redacted
+
+# Prepare PDFs
+task prepare-distribution INPUT_DIR=../../test_files/pdf-distribution OUTPUT_DIR=output/distribution
+
+# Employee onboarding
+task onboard-employees POLICIES_DIR=../../test_files/test-sign CSV=../../test_files/test-sign/employees.csv
+```
+
+### Available Test Files
 
 Sample files for testing are available in the `test_files/` folder at the repository root.
+
+#### Batch Conversion (`test_files/test-batch/`)
+- `Analysis.docx` - Word document
+- `Feedback.xlsx` - Excel spreadsheet
+
+#### PDF Operations (`test_files/test-pdfs/`)
+- `SampleResume.pdf` - Resume with PII (for redaction testing)
+- `Sample Tables.pdf` - PDF with tables (for extraction)
+- `BOB - Student-Loan-Application-Form.pdf` - Form with fields (for extraction)
+
+#### Distribution (`test_files/pdf-distribution/`)
+- `Marketing_Brochure_Product_A_Rich.docx`
+- `Marketing_Brochure_Product_B_Rich.docx`
+- `Marketing_Brochure_Product_C_Rich.docx`
+
+#### Sign API (`test_files/test-sign/`)
+- `company-policies.pdf` - Company policy document
+- `confidentiality-agreement.pdf` - NDA template
+- `sample-company-policies.pdf` - Additional policy
+- `employees.csv` - Sample employee list for testing
+
+### Important Notes
+
+- **Sign API Testing**: The `employee_policy_onboarding` script sends real signature requests via email. Make sure the email addresses in `employees.csv` are valid and you have permission to send them test requests.
+- **Output Folders**: All scripts automatically create output folders if they don't exist.
+- **File Paths**: Use quotes around file paths with spaces (e.g., `"Sample Tables.pdf"`).
+- **Large Files**: Some operations may take longer with large or complex documents.
+
 
 ## Getting Your Credentials
 

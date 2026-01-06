@@ -1,38 +1,36 @@
 #!/usr/bin/env node
-/**
- * 🔒 SMART PII REDACTION
- * ======================
- *
- * The script exemplifies a typical workflow for protecting sensitive customer information.
- * As a compliance officer, it's essential to review and redact personally identifiable
- * information (PII) from documents before sharing them with third parties, storing them
- * in public systems, or using them for analysis. Manual redaction is time-consuming and
- * error-prone, potentially missing sensitive data like social security numbers, phone
- * numbers, addresses, or email addresses.
- *
- * This workflow automates compliant document redaction. The script processes each PDF
- * file individually - for every document in the input folder, it uses AI-powered PII
- * detection to identify all instances of sensitive information across all pages, then
- * automatically applies redactions to permanently remove this data. Each processed file
- * is saved to the output folder with all PII securely redacted, ready for safe sharing
- * or archival.
- *
- * PRIVACY COMPLIANCE STANDARDS:
- *   ✓ AI-powered PII detection (SSN, phone, email, address)
- *   ✓ Automatic redaction (permanent removal)
- *   ✓ Batch processing (entire folders)
- *
- * USAGE:
- *   npm run smart-redact -- <input_folder> <output_folder>
- *   # or with tsx:
- *   tsx src/scripts/smart-redact-pii.ts <input_folder> <output_folder>
- *
- * EXAMPLE:
- *   npm run smart-redact -- ../../test_files/test-pdfs ./output
+/** 
+🔒 SMART PII REDACTION
+======================
+ 
+The script exemplifies a typical workflow for protecting sensitive customer information.
+As a compliance officer, it's essential to review and redact
+personally identifiable information (PII) from documents before sharing them with
+third parties, storing them in public systems, or using them for analysis. Manual
+redaction is time-consuming and error-prone, potentially missing sensitive data like
+social security numbers, phone numbers, addresses, or email addresses.
+
+This workflow automates compliant document redaction. The script processes each PDF
+file individually - for every document in the input folder, it uses AI-powered PII
+detection to identify all instances of sensitive information across all pages, then
+automatically applies redactions to permanently remove this data. Each processed file
+is saved to the output folder with all PII securely redacted, ready for safe sharing
+or archival.
+
+PRIVACY COMPLIANCE STANDARDS:
+  ✓ AI-powered PII detection (SSN, phone, email, address)
+  ✓ Automatic redaction (permanent removal)
+  ✓ Batch processing (entire folders)
+ 
+USAGE:
+  npm run smart-redact -- <input_folder> <output_folder>
+ 
+EXAMPLE:
+  npm run smart-redact -- ../../test_files/test-pdfs ./output
  */
 
 import { program } from 'commander';
-import { readFile, writeFile, copyFile } from 'fs/promises';
+import { writeFile, copyFile } from 'fs/promises';
 import { join } from 'path';
 import { PlatformAPIClient } from '../api/platform-api.js';
 import { validateAndSetup } from '../helpers/document-helpers.js';

@@ -1,38 +1,36 @@
 #!/usr/bin/env node
 /**
- * 🔍 KEYWORD-BASED REDACTION
- * ===========================
- *
- * The script exemplifies a typical workflow for targeted content redaction.
- * As a compliance officer, you need to redact specific sensitive terms from documents
- * before external sharing or public disclosure. Whether removing client names, project
- * codenames, financial figures, or proprietary terminology, manually searching through
- * pages and applying redactions is tedious and risks missing instances, potentially
- * exposing confidential information.
- *
- * This workflow automates keyword-based redaction. The script searches the entire
- * PDF document for all specified keywords and phrases, identifies their exact
- * locations across all pages, then automatically applies permanent redactions to
- * remove them. Multiple keywords can be processed in a single pass, ensuring
- * comprehensive coverage. The result is a thoroughly redacted document ready for
- * safe distribution.
- *
- * KEYWORD REDACTION FEATURES:
- *   ✓ Multi-keyword search (process multiple terms)
- *   ✓ Whole document scanning (all pages)
- *   ✓ Exact location detection
- *   ✓ Permanent redaction (unrecoverable)
- *   ⏳ Case-insensitive matching (feature in development)
- *   ⏳ Regex pattern support (feature in development)
- *
- * USAGE:
- *   npm run redact-keyword -- <input_pdf> <output_pdf> <keyword1> [keyword2 ...]
- *   # or with tsx:
- *   tsx src/scripts/redact-by-keyword.ts <input_pdf> <output_pdf> <keyword1> [keyword2 ...]
- *
- * EXAMPLES:
- *   npm run redact-keyword -- contract.pdf redacted.pdf "confidential" "proprietary"
- *   npm run redact-keyword -- report.pdf clean.pdf "Project Zeus" "Client ABC"
+🔍 KEYWORD-BASED REDACTION
+===========================
+
+The script exemplifies a typical workflow for targeted content redaction.
+As a compliance officer, you need to redact specific
+sensitive terms from documents before external sharing or public disclosure.
+Whether removing client names, project codenames, financial figures, or
+proprietary terminology, manually searching through pages and applying redactions
+is tedious and risks missing instances, potentially exposing confidential information.
+
+This workflow automates keyword-based redaction. The script searches the entire
+PDF document for all specified keywords and phrases, identifies their exact
+locations across all pages, then automatically applies permanent redactions to
+remove them. Multiple keywords can be processed in a single pass, ensuring
+comprehensive coverage. The result is a thoroughly redacted document ready for
+safe distribution.
+
+KEYWORD REDACTION FEATURES:
+  ✓ Multi-keyword search (process multiple terms)
+  ✓ Whole document scanning (all pages)
+  ✓ Exact location detection
+  ✓ Permanent redaction (unrecoverable)
+  ⏳ Case-insensitive matching (feature in development)
+  ⏳ Regex pattern support (feature in development)
+
+USAGE:  
+   npm run redact-keyword -- <input_pdf> <output_pdf> <keyword1> [keyword2 ...]
+
+EXAMPLES:
+   npm run redact-keyword -- contract.pdf redacted.pdf "confidential" "proprietary"
+   npm run redact-keyword -- report.pdf clean.pdf "Project Zeus" "Client ABC"
  */
 
 import { program } from 'commander';

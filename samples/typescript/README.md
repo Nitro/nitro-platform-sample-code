@@ -258,6 +258,111 @@ output/
     └── envelope-info.json
 ```
 
+## Testing with Sample Files
+
+The repository includes test files you can use to try out the scripts. All test files are located in the `../../test_files/` directory (relative to the TypeScript samples folder).
+
+### Quick Test Commands
+
+#### 1. Test Authentication
+```bash
+npm run quickstart
+# Expected: ✅ Authentication successful! Token: eyJ0...
+```
+
+#### 2. Convert Single Document
+```bash
+# Convert Word document to PDF
+npm run convert -- ../../test_files/test-batch/Analysis.docx output.pdf pdf
+
+# Convert Excel to PDF
+npm run convert -- ../../test_files/test-batch/Feedback.xlsx output.pdf pdf
+
+# Convert PowerPoint to PNG
+npm run convert -- ../../test_files/SamplePPTX.pptx output.png png
+```
+
+#### 3. Batch Document Conversion
+```bash
+# Convert all Word documents in test-batch to PDF
+npm run batch -- ../../test_files/test-batch ./output pdf "*.docx"
+
+# Convert all Excel files
+npm run batch -- ../../test_files/test-batch ./output pdf "*.xlsx"
+```
+
+#### 4. Extract Data from PDFs
+```bash
+# Extract form fields from student loan application
+npm run extract -- forms "../../test_files/test-pdfs/BOB - Student-Loan-Application-Form.pdf" forms-output.json
+
+# Extract tables from PDF
+npm run extract -- tables "../../test_files/test-pdfs/Sample Tables.pdf" tables-output.json
+```
+
+#### 5. Smart PII Redaction
+```bash
+# Automatically detect and redact PII from resume
+npm run smart-redact -- ../../test_files/test-pdfs ./redacted-output
+```
+
+#### 6. Keyword-Based Redaction
+```bash
+# Redact specific keywords from resume
+npm run redact-keyword -- ../../test_files/test-pdfs/SampleResume.pdf redacted.pdf "resume" "contact"
+```
+
+#### 7. Bulk Password Protection
+```bash
+# Password protect all PDFs in test-pdfs folder
+npm run bulk-password -- ../../test_files/test-pdfs ./protected-output "SecurePass123"
+```
+
+#### 8. Prepare PDFs for Distribution
+```bash
+# Convert marketing brochures to optimized PDFs with metadata removed
+npm run prepare-pdf -- ../../test_files/pdf-distribution ./distribution-output
+```
+
+#### 9. Employee Policy Onboarding (Sign API)
+```bash
+# Send company policies for signature to employees
+npm run employee-policy -- ../../test_files/test-sign ../../test_files/test-sign/employees.csv
+
+# Note: This sends real signature requests to email addresses in the CSV!
+# Check the CSV file first: ../../test_files/test-sign/employees.csv
+```
+
+### Available Test Files
+
+#### Batch Conversion (`test_files/test-batch/`)
+- `Analysis.docx` - Word document
+- `Feedback.xlsx` - Excel spreadsheet
+
+#### PDF Operations (`test_files/test-pdfs/`)
+- `SampleResume.pdf` - Resume with PII (for redaction testing)
+- `Sample Tables.pdf` - PDF with tables (for extraction)
+- `BOB - Student-Loan-Application-Form.pdf` - Form with fields (for extraction)
+
+#### Distribution (`test_files/pdf-distribution/`)
+- `Marketing_Brochure_Product_A_Rich.docx`
+- `Marketing_Brochure_Product_B_Rich.docx`
+- `Marketing_Brochure_Product_C_Rich.docx`
+
+#### Sign API (`test_files/test-sign/`)
+- `company-policies.pdf` - Company policy document
+- `confidentiality-agreement.pdf` - NDA template
+- `sample-company-policies.pdf` - Additional policy
+- `employees.csv` - Sample employee list for testing
+
+
+### Important Notes
+
+- **Sign API Testing**: The `employee-policy-onboarding` script sends real signature requests via email. Make sure the email addresses in `employees.csv` are valid and you have permission to send them test requests.
+- **Output Folders**: All scripts automatically create output folders if they don't exist.
+- **File Paths**: Use quotes around file paths with spaces (e.g., `"Sample Tables.pdf"`).
+- **Large Files**: Some operations may take longer with large or complex documents.
+
 ## Code Style & Conventions
 
 ### Naming Conventions

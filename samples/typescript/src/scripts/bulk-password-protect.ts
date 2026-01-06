@@ -1,34 +1,32 @@
 #!/usr/bin/env node
 /**
- * 🔐 BULK PASSWORD PROTECTION
- * ============================
- *
- * The script exemplifies a typical workflow for securing confidential documents.
- * As a security professional, it's essential to protect sensitive documents with
- * passwords before distributing them to authorized personnel, storing them in shared
- * drives, or archiving them for compliance purposes. Manually setting passwords on
- * individual files is tedious and inconsistent, leading to weak passwords or missed
- * files that remain unprotected.
- *
- * This workflow automates secure document protection. The script processes each PDF
- * file individually - for every document in the input folder, it applies robust
- * password encryption using a consistent password across all files. Each protected
- * file is saved to the output folder with the same filename, ensuring that the entire
- * batch of documents maintains uniform security standards. The result is a complete
- * set of password-protected PDFs ready for secure distribution or storage.
- *
- * DOCUMENT SECURITY STANDARDS:
- *   ✓ Password encryption (AES-256)
- *   ✓ Batch processing (entire folders)
- *   ✓ Consistent security (uniform password policy)
- *
- * USAGE:
- *   npm run bulk-password -- <input_folder> <output_folder> <password>
- *   # or with tsx:
- *   tsx src/scripts/bulk-password-protect.ts <input_folder> <output_folder> <password>
- *
- * EXAMPLE:
- *   npm run bulk-password -- ../../test_files/test-pdfs ./output MySecureP@ss123
+ 🔐 BULK PASSWORD PROTECTION
+============================
+
+The script exemplifies a typical workflow for securing confidential documents.
+As a security professional, it's essential to protect sensitive
+documents with passwords before distributing them to authorized personnel, storing
+them in shared drives, or archiving them for compliance purposes. Manually setting
+passwords on individual files is tedious and inconsistent, leading to weak passwords
+or missed files that remain unprotected.
+
+This workflow automates secure document protection. The script processes each PDF
+file individually - for every document in the input folder, it applies robust
+password encryption using a consistent password across all files. Each protected
+file is saved to the output folder with the same filename, ensuring that the entire
+batch of documents maintains uniform security standards. The result is a complete
+set of password-protected PDFs ready for secure distribution or storage.
+
+DOCUMENT SECURITY STANDARDS:
+  ✓ Password encryption (AES-256)
+  ✓ Batch processing (entire folders)
+  ✓ Consistent security (uniform password policy)
+
+USAGE:
+   npm run bulk-password -- <input_folder> <output_folder> <password>
+  
+EXAMPLE:
+   npm run bulk-password -- ../../test_files/test-pdfs ./output MySecureP@ss123
  */
 
 import { program } from 'commander';

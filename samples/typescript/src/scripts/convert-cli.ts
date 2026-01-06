@@ -1,33 +1,31 @@
 #!/usr/bin/env node
 /**
- * 🔄 SINGLE DOCUMENT CONVERSION
- * ==============================
- *
- * The script exemplifies a typical workflow for quick document format conversion.
- * As a business professional, you often need to convert individual
- * documents between formats for sharing, presentations, or compatibility requirements.
- * Whether converting a Word document to PDF for distribution, an Excel spreadsheet to
- * CSV for data processing, or a presentation to images for web display, manual
- * conversion through multiple applications is inefficient.
- *
- * This workflow provides instant document conversion. The script takes a single input
- * file and converts it to the specified output format using professional-grade
- * conversion algorithms. The result is a high-quality converted file that preserves
- * formatting, structure, and content fidelity, ready for immediate use.
- *
- * CONVERSION FEATURES:
- *   ✓ Multiple format support (PDF, DOCX, XLSX, PNG, etc.)
- *   ✓ High-fidelity conversion (preserves formatting)
- *
- * USAGE:
- *   npm run convert -- <input_file> <output_file> <format>
- *   # or with tsx:
- *   tsx src/scripts/convert-cli.ts <input_file> <output_file> <format>
- *
- * EXAMPLES:
- *   npm run convert -- document.docx document.pdf pdf
- *   npm run convert -- presentation.pptx slide.pdf pdf
- *   npm run convert -- spreadsheet.xlsx data.pdf pdf
+🔄 SINGLE DOCUMENT CONVERSION
+==============================
+
+The script exemplifies a typical workflow for quick document format conversion.
+As a business professional, you often need to convert individual
+documents between formats for sharing, presentations, or compatibility requirements.
+Whether converting a Word document to PDF for distribution, an Excel spreadsheet to
+CSV for data processing, or a presentation to images for web display, manual
+conversion through multiple applications is inefficient.
+
+This workflow provides instant document conversion. The script takes a single input
+file and converts it to the specified output format using professional-grade
+conversion algorithms. The result is a high-quality converted file that preserves
+formatting, structure, and content fidelity, ready for immediate use.
+
+CONVERSION FEATURES:
+  ✓ Multiple format support (PDF, DOCX, XLSX, PNG, etc.)
+  ✓ High-fidelity conversion (preserves formatting)
+
+USAGE:
+   npm run convert -- <input_file> <output_file> <format>
+
+EXAMPLES:
+   npm run convert -- document.docx document.pdf pdf
+   npm run convert -- presentation.pptx slide.pdf pdf
+   npm run convert -- spreadsheet.xlsx data.pdf pdf
  */
 
 import { program } from 'commander';
