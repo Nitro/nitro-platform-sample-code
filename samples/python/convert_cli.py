@@ -3,17 +3,22 @@
 🔄 SINGLE DOCUMENT CONVERSION
 ==============================
 
-The script exemplifies a typical workflow for quick document format conversion.
-As a business professional, you often need to convert individual
-documents between formats for sharing, presentations, or compatibility requirements.
-Whether converting a Word document to PDF for distribution, an Excel spreadsheet to
-CSV for data processing, or a presentation to images for web display, manual
-conversion through multiple applications is inefficient.
+This script demonstrates a simple and efficient way to convert documents between formats.
 
-This workflow provides instant document conversion. The script takes a single input
-file and converts it to the specified output format using professional-grade
-conversion algorithms. The result is a high-quality converted file that preserves
-formatting, structure, and content fidelity, ready for immediate use.
+In daily work, you may need to convert individual files for sharing,
+presenting, or ensuring compatibility with different systems. For example,
+you might convert a Word document to a PDF for easy distribution, an Excel
+spreadsheet to a CSV file for data processing, or a presentation into images
+for use on a website. Doing this manually across multiple applications can be
+time-consuming and inconvenient.
+
+This workflow simplifies the process by providing instant document
+conversion. You supply a single input file and choose the desired output
+format. The script handles the conversion automatically using high-quality
+conversion methods.
+
+The resulting file maintains the original layout, structure, and content
+accuracy, so it is ready to use right away.
 
 CONVERSION FEATURES:
   ✓ Multiple format support (PDF, DOCX, XLSX, PNG, etc.)
@@ -35,6 +40,7 @@ from typing import Annotated
 import typer
 
 from api.platform_api import PlatformAPIClient
+
 
 class OutputFormat(str, Enum):
     """Supported output formats for document conversion."""

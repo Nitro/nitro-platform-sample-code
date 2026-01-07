@@ -38,7 +38,10 @@ class PlatformAPIClient(BaseOAuthClient):
         data = {"method": method, "params": json.dumps(params or {})}
 
         response = self._client.post(
-            f"{self._settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
+            f"{self._settings.platform_base_url}/{endpoint}",
+            headers=headers,
+            files=files,
+            data=data,
         )
 
         response.raise_for_status()
@@ -62,7 +65,10 @@ class PlatformAPIClient(BaseOAuthClient):
         data = {"method": method, "params": json.dumps(params or {})}
 
         response = self._client.post(
-            f"{self._settings.platform_base_url}/{endpoint}", headers=headers, files=files, data=data
+            f"{self._settings.platform_base_url}/{endpoint}",
+            headers=headers,
+            files=files,
+            data=data,
         )
 
         response.raise_for_status()

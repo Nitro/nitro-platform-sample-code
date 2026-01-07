@@ -3,19 +3,26 @@
 🔐 BULK PASSWORD PROTECTION
 ============================
 
-The script exemplifies a typical workflow for securing confidential documents.
-As a security professional, it's essential to protect sensitive
-documents with passwords before distributing them to authorized personnel, storing
-them in shared drives, or archiving them for compliance purposes. Manually setting
-passwords on individual files is tedious and inconsistent, leading to weak passwords
-or missed files that remain unprotected.
+This script shows a standard workflow to protect confidential documents.
 
-This workflow automates secure document protection. The script processes each PDF
-file individually - for every document in the input folder, it applies robust
-password encryption using a consistent password across all files. Each protected
-file is saved to the output folder with the same filename, ensuring that the entire
-batch of documents maintains uniform security standards. The result is a complete
-set of password-protected PDFs ready for secure distribution or storage.
+Security staff must protect sensitive documents with passwords before they
+share them with authorized users, save them in shared drives, or store them
+for compliance. Manually adding passwords to individual files takes a lot of
+time and can cause errors. This can result in weak passwords or files that are
+not protected. This workflow automates document protection.
+
+The script processes one PDF file at a time. For each PDF file in the input folder, the script:
+
+Applies password encryption
+
+Uses the same password for all files
+
+Saves the protected file to the output folder with the same file
+name
+
+This process ensures that all documents follow the same security standard.
+The result is a set of password-protected PDF files ready for secure
+sharing or storage.
 
 DOCUMENT SECURITY STANDARDS:
   ✓ Password encryption (AES-256)

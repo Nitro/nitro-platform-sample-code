@@ -10,7 +10,6 @@ import httpx
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 TOKEN_EXPIRY_BUFFER_SECONDS = 60
 
 
