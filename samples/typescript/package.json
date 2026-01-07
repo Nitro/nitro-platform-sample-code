@@ -1,0 +1,38 @@
+{
+  "name": "@nitro/platform-samples-typescript",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "TypeScript sample scripts for the Nitro Platform API",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch",
+    "quickstart": "tsx src/scripts/quickstart.ts",
+    "convert": "tsx src/scripts/convert-cli.ts",
+    "batch": "tsx src/scripts/batch-process.ts",
+    "extract": "tsx src/scripts/extract-data.ts",
+    "smart-redact": "tsx src/scripts/smart-redact-pii.ts",
+    "employee-policy": "tsx src/scripts/employee-policy-onboarding.ts",
+    "bulk-password": "tsx src/scripts/bulk-password-protect.ts",
+    "redact-keyword": "tsx src/scripts/redact-by-keyword.ts",
+    "prepare-pdf": "tsx src/scripts/prepare-pdf-for-distribution.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "commander": "^11.0.0",
+    "dotenv": "^16.0.0",
+    "form-data": "^4.0.0",
+    "csv-parse": "^5.5.0",
+    "adm-zip": "^0.5.10",
+    "mime-types": "^2.1.35"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/adm-zip": "^0.5.5",
+    "@types/mime-types": "^2.1.4",
+    "typescript": "^5.3.0",
+    "tsx": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
