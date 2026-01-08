@@ -1,23 +1,45 @@
-# Nitro Platform API Integrations
+# Nitro Platform Integrations
 
-This repository provides examples and tools for integrating with the Nitro Platform API, enabling document conversion, extraction, transformation, and workflow automation.
+This repository provides production-ready examples and tools for integrating with the Nitro Platform API and Nitro Sign API, enabling document conversion, extraction, transformation, workflow automation, and eSignature capabilities.
 
-## What is the Platform API?
+## What's Included
+
+This repository contains everything you need to start integrating with Nitro's APIs:
+
+- **API Client SDKs** (Python & TypeScript) - Production-quality clients with OAuth2 authentication
+- **Postman Collection** - Complete API reference with pre-configured examples for all endpoints
+- **Production Workflow Examples** - Real-world CLI tools demonstrating complete business workflows
+- **Documentation** - Comprehensive guides covering workflows, API reference, and setup instructions
+- **Test Files** - Sample documents for testing all API operations
+
+## API Capabilities
+
+### Platform API - Document Processing
 
 The Nitro Platform API provides programmatic access to document processing capabilities including:
-- **Document Conversions**: Convert between formats (Word↔PDF, Excel→PDF, PowerPoint→PDF, etc.)
+- **Document Conversions**: Convert between formats (Word↔PDF, Excel→PDF, PowerPoint→PDF, Image→PDF, PDF→Word/Excel/Image)
 - **Data Extraction**: Extract text, form data, tables, and detect PII from documents
-- **Document Transformations**: Compress, merge, split, redact, password protect, and more
+- **Document Transformations**: Compress, merge, split, redact, password protect, rotate, flatten, and more
 - **Async Processing**: Handle large documents with job-based workflows
+
+### Sign API - eSignature & Envelopes
+
+The Nitro Sign API provides eSignature capabilities including:
+- **Envelope Management**: Create, send, track, and manage signature envelopes
+- **Document Upload**: Add multiple documents to envelopes
+- **Participant Management**: Add signers with roles and routing
+- **Field Placement**: Programmatically place signature fields on documents
+- **Workflow Automation**: Send reminders, track status, download signed documents
 
 ## Repository Structure
 
 ```
-├── postman/                    # Postman collection and environment
-├── power-automate/            # Custom connector and sample flows
 ├── samples/
-│   └── python/               # Python examples
-└── docs/                     # API documentation and guides
+│   ├── python/                 # Python SDK and CLI workflow examples
+│   └── typescript/             # TypeScript SDK and examples
+├── postman/                    # Postman collection for API testing
+├── docs/                       # API documentation and workflow guides
+└── test_files/                 # Sample documents for testing
 ```
 
 ## Getting Started
@@ -46,13 +68,18 @@ The Nitro Platform API provides programmatic access to document processing capab
 4. Select test files for each request
 5. Run the sample requests
 
-#### Using Power Automate
-1. Create a custom connector using instructions in `power-automate/`
-2. Configure API key authentication
-3. Build flows for document processing workflows
+The Postman collection includes pre-configured examples for:
+- Document conversions (Word↔PDF, Excel→PDF, PowerPoint→PDF, Image→PDF)
+- Data extraction (text, forms, tables, PII detection)
+- Document transformations (compress, merge, split, redact, password protection)
+- Sign API operations (create envelopes, add participants, send for signing)
 
-#### Using Sample Code
-- **Python**: See `samples/python/README.md`
+#### Using Python SDK
+See `samples/python/README.md` for setup instructions. Key example scripts include:
+
+
+#### Using TypeScript SDK
+See `samples/typescript/` for TypeScript/Node.js integration examples with the same functionality as Python.
 
 ## Authentication
 
@@ -62,12 +89,43 @@ The API uses OAuth2 authentication:
 
 See the [authentication documentation](https://developers.gonitro.com/docs/api-reference/authentication/get-access-token) for details.
 
-## Common Workflows
+## Example Workflows
 
-- **Document Conversion**: Upload a file → Get converted result
-- **Async Processing**: Start job → Poll status → Download result
-- **Data Extraction**: Upload PDF → Extract text/tables/forms
-- **Document Transformation**: Upload PDF → Apply operations → Download result
+This repository demonstrates complete business workflows through working code examples:
+
+### Document Processing Examples
+- **quickstart.py** - Validates API credentials and tests OAuth2 authentication
+- **convert_cli.py** - Single document conversion with CLI for any supported format
+- **batch_process.py** - Processes entire folders with pattern matching and progress tracking
+- **extract_data.py** - Extracts form fields, tables, or plain text from PDFs as structured JSON
+- **smart_redact_pii.py** - AI-powered detection and redaction of PII (SSN, emails, addresses) for GDPR/HIPAA compliance
+- **redact_by_keyword.py** - Finds and permanently redacts specific keywords across documents
+- **bulk_password_protect.py** - Adds password protection to multiple PDFs in batch
+- **prepare_pdf_for_distribution.py** - Marketing workflow that converts Word to PDF, compresses files, and removes metadata for external sharing
+
+### eSignature Example
+- **employee_policy_onboarding.py** - HR workflow that reads employee data from CSV, creates signature envelopes with policy documents, sends for signing, tracks status, and downloads signed documents organized by employee
+
+See `docs/workflow-examples.md` for detailed implementation guides.
+
+## API Client Architecture
+
+The repository includes production-ready SDKs in both Python and TypeScript:
+
+- **BaseOAuthClient** - Shared OAuth2 authentication with automatic token refresh
+- **PlatformAPIClient** - Document conversion, extraction, and transformation operations
+- **SignAPIClient** - Complete eSignature and envelope workflow management
+
+Both SDKs provide identical functionality, allowing you to choose your preferred language.
+
+## Testing
+
+The `test_files/` directory contains sample documents for testing all API operations:
+- Office documents (Word, Excel, PowerPoint) for conversion testing
+- PDFs with forms, tables, and text for extraction testing
+- Sample policies and employee data for eSignature workflow testing
+
+All example scripts include references to these test files for immediate hands-on testing.
 
 ## Support
 
