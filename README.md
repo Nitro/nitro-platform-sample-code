@@ -1,4 +1,4 @@
-# Nitro Platform Integrations
+# Nitro Platform Sample Code
 
 This repository provides production-ready examples and tools for integrating with the Nitro Platform API and Nitro Sign API, enabling document conversion, extraction, transformation, workflow automation, and eSignature capabilities.
 

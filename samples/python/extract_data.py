@@ -36,7 +36,7 @@ MODES:
 
 EXAMPLES:
   python extract_data.py forms application.pdf data.json
-  python extract_data.py tables invoice.pdf tables.json
+  python extract_data.py tables "../../test_files/test-pdfs/Sample Tables.pdf" tables.json
 """
 
 import json
