@@ -740,7 +740,7 @@
               "formdata": [
                 {
                   "key": "method",
-                  "value": "pii-bbox-extraction"
+                  "value": "extract-pii-bounding-boxes"
                 },
                 {
                   "key": "params",
@@ -800,7 +800,7 @@
               "formdata": [
                 {
                   "key": "method",
-                  "value": "text-bbox-extraction"
+                  "value": "extract-text-bounding-boxes"
                 },
                 {
                   "key": "params",
@@ -1091,7 +1091,7 @@
           "response": []
         },
         {
-          "name": "Optomize",
+          "name": "Optimize",
           "protocolProfileBehavior": {
             "followRedirects": true,
             "disableUrlEncoding": false,
@@ -1433,15 +1433,12 @@
                 {
                   "key": "file",
                   "type": "file",
-                  "src": [
-                    "Sample Tables.pdf",
-                    "SampleResume.pdf"
-                  ]
+                  "src": "Sample Tables.pdf"
                 },
                 {
                   "key": "file2",
                   "type": "file",
-                  "value": null
+                  "src" : "SampleResume.pdf"
                 }
               ]
             },
