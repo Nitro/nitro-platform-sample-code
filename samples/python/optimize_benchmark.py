@@ -57,6 +57,8 @@ class Profile(str, Enum):
 
 app = typer.Typer()
 
+HTTP_UNAUTHORIZED = 401
+
 
 def _echo_profiles(profiles: list[Profile]) -> None:
     """Show which profiles will run, with what each is suited for."""
@@ -86,6 +88,14 @@ def _run_all(
             else:
                 typer.echo(f" ❌ FAILED: {result.error_message}")
             results.append(result)
+            if result.http_status == HTTP_UNAUTHORIZED and "/oauth/token" in (
+                result.error_message or ""
+            ):
+                typer.echo(
+                    "\n❌ Authentication failed - check PLATFORM_CLIENT_ID and "
+                    "PLATFORM_CLIENT_SECRET in your .env file."
+                )
+                raise typer.Exit(1)
     return results
 
 

@@ -12,6 +12,8 @@ import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import httpx
+
 from api.platform_api import JobFailedError
 
 if TYPE_CHECKING:
@@ -128,6 +130,30 @@ def run_optimize(
             error_type=exc.error_type,
             error_message=exc.message,
             request_id=exc.request_id,
+        )
+    except httpx.HTTPStatusError as exc:
+        # e.g. a 401 from the token endpoint: caught here so a failed run is
+        # recorded rather than the traceback (with its locals) being dumped.
+        return _failure(
+            pdf_path,
+            profile,
+            input_bytes,
+            int((time.perf_counter() - started) * 1000),
+            http_status=exc.response.status_code,
+            error_type="HTTPStatusError",
+            error_message=f"HTTP {exc.response.status_code} from {exc.request.url.path}",
+            request_id=None,
+        )
+    except httpx.HTTPError as exc:
+        return _failure(
+            pdf_path,
+            profile,
+            input_bytes,
+            int((time.perf_counter() - started) * 1000),
+            http_status=None,
+            error_type=type(exc).__name__,
+            error_message=str(exc) or "The request could not be completed.",
+            request_id=None,
         )
 
     duration_ms = int((time.perf_counter() - started) * 1000)
