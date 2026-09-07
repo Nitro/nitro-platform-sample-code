@@ -102,6 +102,7 @@ This repository demonstrates complete business workflows through working code ex
 - **redact_by_keyword.py** - Finds and permanently redacts specific keywords across documents
 - **bulk_password_protect.py** - Adds password protection to multiple PDFs in batch
 - **prepare_pdf_for_distribution.py** - Marketing workflow that converts Word to PDF, compresses files, and removes metadata for external sharing
+- **optimize_benchmark.py** - Evaluation workflow that runs a folder of PDFs through the Optimize API and reports per-file size reduction in CSVs and a shareable, self-contained HTML report
 
 ### eSignature Example
 - **employee_policy_onboarding.py** - HR workflow that reads employee data from CSV, creates signature envelopes with policy documents, sends for signing, tracks status, and downloads signed documents organized by employee
