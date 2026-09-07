@@ -244,7 +244,11 @@ class PlatformAPIClient(BaseOAuthClient):
                 request_id=request_id,
             )
 
-        result = self._client.get(result_url, headers=auth)
+        # Without this Accept header the result endpoint returns the job's
+        # JSON representation rather than the output file itself.
+        result = self._client.get(
+            result_url, headers={**auth, "Accept": "application/octet-stream"}
+        )
         if result.status_code != HTTP_OK:
             error_type, title = _problem_detail(result.text)
             raise JobFailedError(
