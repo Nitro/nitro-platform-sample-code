@@ -64,56 +64,55 @@ def main(
     print(f"📋 Found {len(files)} document(s) to process\n")
 
     # Initialize API client (loads credentials from .env)
-    client = PlatformAPIClient()
+    with PlatformAPIClient.build() as client:
+        # Process each document
+        success_count = 0
+        failed_count = 0
 
-    # Process each document
-    success_count = 0
-    failed_count = 0
+        for i, doc in enumerate(files, 1):
+            print(f"[{i}/{len(files)}] Processing: {doc.name}")
 
-    for i, doc in enumerate(files, 1):
-        print(f"[{i}/{len(files)}] Processing: {doc.name}")
+            temp_pdf = None
+            try:
+                # Step 1: Convert to PDF
+                print("  🔐 Converting to PDF...")
+                pdf_bytes = client.convert(doc, "pdf")
 
-        temp_pdf = None
-        try:
-            # Step 1: Convert to PDF
-            print("  🔐 Converting to PDF...")
-            pdf_bytes = client.convert(doc, "pdf")
+                temp_pdf = output_folder / f"{doc.stem}_temp.pdf"
+                temp_pdf.write_bytes(pdf_bytes)
 
-            temp_pdf = output_folder / f"{doc.stem}_temp.pdf"
-            temp_pdf.write_bytes(pdf_bytes)
+                # Step 2: Compress PDF
+                print("  📦 Compressing...")
+                compressed_pdf = client.compress(temp_pdf, level=2)
 
-            # Step 2: Compress PDF
-            print("  📦 Compressing...")
-            compressed_pdf = client.compress(temp_pdf, level=2)
+                temp_pdf.write_bytes(compressed_pdf)
 
-            temp_pdf.write_bytes(compressed_pdf)
+                # Step 3: Remove metadata properties
+                print("  🔒 Removing metadata...")
+                properties_to_clear = dict.fromkeys(PROPERTIES_TO_REMOVE, "")
+                clean_pdf = client.set_properties(temp_pdf, properties_to_clear)
 
-            # Step 3: Remove metadata properties
-            print("  🔒 Removing metadata...")
-            properties_to_clear = dict.fromkeys(PROPERTIES_TO_REMOVE, "")
-            clean_pdf = client.set_properties(temp_pdf, properties_to_clear)
-
-            # Save final PDF
-            final_pdf = output_folder / f"{doc.stem}.pdf"
-            final_pdf.write_bytes(clean_pdf)
-            temp_pdf.unlink()
-
-            print(f"  ✅ Secured: {final_pdf.name}\n")
-            success_count += 1
-
-        except Exception as e:  # noqa: BLE001
-            print(f"  ❌ FAILED: {e}\n")
-            failed_count += 1
-            if temp_pdf and temp_pdf.exists():
+                # Save final PDF
+                final_pdf = output_folder / f"{doc.stem}.pdf"
+                final_pdf.write_bytes(clean_pdf)
                 temp_pdf.unlink()
 
-    # Display summary
-    print("=" * 60)
-    print(f"✅ {success_count} document(s) secured")
-    if failed_count > 0:
-        print(f"⚠️  {failed_count} document(s) FAILED - do NOT distribute!")
-    print(f"📂 Output: {output_folder.absolute()}")
-    print("=" * 60)
+                print(f"  ✅ Secured: {final_pdf.name}\n")
+                success_count += 1
+
+            except Exception as e:  # noqa: BLE001
+                print(f"  ❌ FAILED: {e}\n")
+                failed_count += 1
+                if temp_pdf and temp_pdf.exists():
+                    temp_pdf.unlink()
+
+        # Display summary
+        print("=" * 60)
+        print(f"✅ {success_count} document(s) secured")
+        if failed_count > 0:
+            print(f"⚠️  {failed_count} document(s) FAILED - do NOT distribute!")
+        print(f"📂 Output: {output_folder.absolute()}")
+        print("=" * 60)
 
 
 if __name__ == '__main__':

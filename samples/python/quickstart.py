@@ -2,7 +2,7 @@
 
 import os
 
-import httpx
+import httpx2
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,7 +17,7 @@ def get_access_token() -> str:
     url = f"{BASE_URL}/oauth/token"
     data = {"clientID": CLIENT_ID, "clientSecret": CLIENT_SECRET}
 
-    response = httpx.post(url, json=data)
+    response = httpx2.post(url, json=data)
     response.raise_for_status()
     return response.json()["accessToken"]
 
@@ -28,14 +28,14 @@ def test_connection(token: str) -> bool | None:
     headers = {"Authorization": f"Bearer {token}"}
 
     try:
-        response = httpx.get(url, headers=headers)
+        response = httpx2.get(url, headers=headers)
         # 404 is expected for non-existent job, but proves auth works
         if response.status_code == 404:
             print("✅ Authentication successful (404 expected for test job ID)")
             return True
         response.raise_for_status()
         return True  # noqa: TRY300
-    except httpx.HTTPStatusError as e:
+    except httpx2.HTTPStatusError as e:
         if e.response.status_code == 404:
             print("✅ Authentication successful (404 expected for test job ID)")
             return True

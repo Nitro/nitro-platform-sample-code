@@ -148,6 +148,7 @@ api/
 - `batch_process.py` - Batch convert documents
 - `bulk_password_protect.py` - Password protect multiple PDFs
 - `prepare_pdf_for_distribution.py` - Prepare PDFs for external distribution (convert, compress, remove metadata)
+- `optimize_benchmark.py` - Benchmark the Optimize API on a folder of PDFs, with CSVs and a self-contained HTML report
 
 ### Sign API Tools (eSignature)
 - `employee_policy_onboarding.py` - Complete HR workflow: send policy documents to employees for signature
@@ -198,6 +199,22 @@ uv run python batch_process.py ./input ./output pdf "*.docx"
 # Or use Task command
 task batch INPUT_DIR=./input OUTPUT_DIR=./output FORMAT=pdf PATTERN='*.docx'
 ```
+
+### Benchmark PDF Compression
+```bash
+# Run every PDF in a folder through the Optimize API (default profile: minimal-file-size)
+uv run python optimize_benchmark.py ./pdfs ./output
+
+# Benchmark several profiles side by side
+uv run python optimize_benchmark.py ./pdfs ./output -p minimal-file-size -p web
+
+# Or use Task command
+task optimize-benchmark INPUT_DIR=./pdfs OUTPUT_DIR=./output
+```
+
+The run writes the optimized PDFs, `results.csv`, `summary.csv` and a
+self-contained `report.html` (headline numbers, a size-reduction distribution
+chart and a filterable per-file table) that opens in your browser when done.
 
 ## Using the API Client
 

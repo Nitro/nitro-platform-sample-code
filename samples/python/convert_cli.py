@@ -39,6 +39,7 @@ from typing import Annotated
 
 import typer
 
+from api import FatalError
 from api.platform_api import PlatformAPIClient
 
 
@@ -67,32 +68,29 @@ def main(
     """Convert a document from one format to another using the Platform API."""
     # Validate input file exists
     if not input_file.exists():
-        print(f'❌ Error: Input file not found: {input_file}')
-        raise typer.Exit(code=1)
+        raise FatalError(f'Input file not found: {input_file}')
 
     # Create output directory if needed
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize API client (loads credentials from .env)
-    client = PlatformAPIClient()
+    with PlatformAPIClient.build() as client:
+        try:
+            # Convert document
+            print(f'🔄 Converting {input_file.name} to {to_format.value.upper()}...')
+            converted = client.convert(input_file, to_format.value)
 
-    try:
-        # Convert document
-        print(f'🔄 Converting {input_file.name} to {to_format.value.upper()}...')
-        converted = client.convert(input_file, to_format.value)
+            # Save converted file
+            output_file.write_bytes(converted)
 
-        # Save converted file
-        output_file.write_bytes(converted)
+            # Display success message
+            print('✅ Conversion successful!')
+            print(f'📄 Input:  {input_file.name} ({input_file.stat().st_size:,} bytes)')
+            print(f'📄 Output: {output_file.name} ({len(converted):,} bytes)')
+            print(f'📂 Saved to: {output_file.absolute()}')
 
-        # Display success message
-        print('✅ Conversion successful!')
-        print(f'📄 Input:  {input_file.name} ({input_file.stat().st_size:,} bytes)')
-        print(f'📄 Output: {output_file.name} ({len(converted):,} bytes)')
-        print(f'📂 Saved to: {output_file.absolute()}')
-
-    except Exception as e:  # noqa: BLE001
-        print(f'❌ Conversion FAILED: {e}')
-        raise typer.Exit(code=1) from None
+        except Exception as e:  # noqa: BLE001
+            raise FatalError(f'Conversion FAILED: {e}') from None
 
 
 if __name__ == '__main__':

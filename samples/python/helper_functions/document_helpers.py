@@ -2,8 +2,6 @@
 Common helper utilities for document processing scripts.
 """
 
-from __future__ import annotations
-
 import sys
 from pathlib import Path
 

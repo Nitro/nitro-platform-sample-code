@@ -59,6 +59,7 @@ from typing import Annotated, Any
 
 import typer
 
+from api import FatalError
 from api.sign_api import SignAPIClient
 from helper_functions.sign_helpers import (
     add_signature_fields_to_documents,
@@ -93,12 +94,10 @@ def _validate_and_setup_inputs(
     """
     # Validate inputs
     if not policies_folder.exists() or not policies_folder.is_dir():
-        print(f'❌ Policies folder not found: {policies_folder}')
-        raise typer.Exit(code=1)
+        raise FatalError(f'Policies folder not found: {policies_folder}')
 
     if not employees_csv.exists():
-        print(f'❌ Employees CSV not found: {employees_csv}')
-        raise typer.Exit(code=1)
+        raise FatalError(f'Employees CSV not found: {employees_csv}')
 
     # Display header
     output_folder = Path('output')
@@ -200,46 +199,43 @@ def main(
         )
 
         # Initialize Sign API client
-        sign_client = SignAPIClient()
+        with SignAPIClient.build() as sign_client:
+            # Process each employee
+            print("=" * 60)
+            print(f"📤 PROCESSING {len(employees)} EMPLOYEE(S)")
+            print("=" * 60)
 
-        # Process each employee
-        print("=" * 60)
-        print(f"📤 PROCESSING {len(employees)} EMPLOYEE(S)")
-        print("=" * 60)
+            success_count = 0
+            failed_count = 0
 
-        success_count = 0
-        failed_count = 0
+            for i, employee in enumerate(employees, 1):
+                try:
+                    _process_employee_onboarding(
+                        sign_client,
+                        employee,
+                        documents,
+                        output_folder,
+                        employee_num=i,
+                        total_employees=len(employees),
+                    )
+                    success_count += 1
 
-        for i, employee in enumerate(employees, 1):
-            try:
-                _process_employee_onboarding(
-                    sign_client,
-                    employee,
-                    documents,
-                    output_folder,
-                    employee_num=i,
-                    total_employees=len(employees),
-                )
-                success_count += 1
+                except Exception as e:  # noqa: BLE001
+                    print(f"  ❌ FAILED: {e}\n")
+                    failed_count += 1
 
-            except Exception as e:  # noqa: BLE001
-                print(f"  ❌ FAILED: {e}\n")
-                failed_count += 1
-
-        # Display summary
-        print("=" * 60)
-        print(f"✅ {success_count} employee(s) completed")
-        if failed_count > 0:
-            print(f"❌ {failed_count} failed")
-        print(f"📂 Output: {output_folder.absolute()}")
-        print("=" * 60)
+            # Display summary
+            print("=" * 60)
+            print(f"✅ {success_count} employee(s) completed")
+            if failed_count > 0:
+                print(f"❌ {failed_count} failed")
+            print(f"📂 Output: {output_folder.absolute()}")
+            print("=" * 60)
 
     except KeyboardInterrupt:
-        print('\n\n⚠️  Interrupted by user')
-        raise typer.Exit(code=1) from None
+        raise FatalError('Interrupted by user') from None
     except Exception as e:  # noqa: BLE001
-        print(f'\n❌ Error: {e}')
-        raise typer.Exit(code=1) from None
+        raise FatalError(f'Error: {e}') from None
 
 
 if __name__ == '__main__':

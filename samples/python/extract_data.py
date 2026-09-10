@@ -45,6 +45,7 @@ from typing import Annotated
 
 import typer
 
+from api import FatalError
 from api.platform_api import PlatformAPIClient
 
 app = typer.Typer()
@@ -62,57 +63,52 @@ def main(
 
     # Validate mode
     if mode not in ['forms', 'tables']:
-        print("❌ Error: Mode must be 'forms' or 'tables'")
-        raise typer.Exit(code=1)
+        raise FatalError("Mode must be 'forms' or 'tables'")
 
     # Validate input file exists
     if not input_pdf.exists():
-        print(f'❌ Error: Input file not found: {input_pdf}')
-        raise typer.Exit(code=1)
+        raise FatalError(f'Input file not found: {input_pdf}')
 
     # Validate input is a PDF
     if input_pdf.suffix.lower() != '.pdf':
-        print('❌ Error: Input must be a PDF file')
-        raise typer.Exit(code=1)
+        raise FatalError('Input must be a PDF file')
 
     # Create output directory if needed
     output_json.parent.mkdir(parents=True, exist_ok=True)
 
     # Initialize API client (loads credentials from .env)
-    client = PlatformAPIClient()
+    with PlatformAPIClient.build() as client:
+        try:
+            # Extract data based on mode
+            if mode == 'forms':
+                print(f'📋 Extracting form fields from {input_pdf.name}...')
+                data = client.extract_forms(input_pdf)
+                data_type = 'form fields'
 
-    try:
-        # Extract data based on mode
-        if mode == 'forms':
-            print(f'📋 Extracting form fields from {input_pdf.name}...')
-            data = client.extract_forms(input_pdf)
-            data_type = 'form fields'
+            else:  # mode == 'tables'
+                print(f'📊 Extracting table data from {input_pdf.name}...')
+                data = client.extract_tables(input_pdf)
+                data_type = 'tables'
 
-        else:  # mode == 'tables'
-            print(f'📊 Extracting table data from {input_pdf.name}...')
-            data = client.extract_tables(input_pdf)
-            data_type = 'tables'
+            # Count extracted items
+            result = data.get('result', {})
+            if mode == 'forms':
+                item_count = len(result.get('fields', []))
+            else:
+                item_count = len(result.get('tables', []))
 
-        # Count extracted items
-        result = data.get('result', {})
-        if mode == 'forms':
-            item_count = len(result.get('fields', []))
-        else:
-            item_count = len(result.get('tables', []))
+            # Save extracted data as JSON
+            output_json.write_text(json.dumps(data, indent=2), encoding='utf-8')
 
-        # Save extracted data as JSON
-        output_json.write_text(json.dumps(data, indent=2), encoding='utf-8')
+            # Display success message
+            print('✅ Extraction successful!')
+            print(f'📊 Extracted: {item_count} {data_type}')
+            print(f'📄 Input:  {input_pdf.name}')
+            print(f'📄 Output: {output_json.name}')
+            print(f'📂 Saved to: {output_json.absolute()}')
 
-        # Display success message
-        print('✅ Extraction successful!')
-        print(f'📊 Extracted: {item_count} {data_type}')
-        print(f'📄 Input:  {input_pdf.name}')
-        print(f'📄 Output: {output_json.name}')
-        print(f'📂 Saved to: {output_json.absolute()}')
-
-    except Exception as e:  # noqa: BLE001
-        print(f'❌ Extraction FAILED: {e}')
-        raise typer.Exit(code=1) from None
+        except Exception as e:  # noqa: BLE001
+            raise FatalError(f'Extraction FAILED: {e}') from None
 
 
 if __name__ == '__main__':
