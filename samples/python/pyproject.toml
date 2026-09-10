@@ -12,11 +12,12 @@ description = "Nitro Platform API samples and examples"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "httpx>=0.27.0",
+    "httpx2>=0.27.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "python-dotenv>=1.0.0",
     "reportlab>=4.0.0",
+    "rich>=14.2.0",
     "typer>=0.9.0",
 ]
 [tool.ruff]
@@ -52,15 +53,13 @@ lint.select = [
   "SIM",  # simplifications
   "C90",  # mccabe complexity
   "TID",  # tidy imports
-  "TC",   # typing under TYPE_CHECKING
   "TD",   # TODOs must be annotated
   "UP",   # pyupgrade / newer syntax
   "W",    # pycodestyle warnings
   "YTT",  # flake8-2020
   "T10",  # debugger statements
 ]
-lint.ignore = ["S101", "S311", "TRY003", "TC003", "TC006"]
-lint.flake8-type-checking.strict = true
+lint.ignore = ["S101", "S311", "TRY003"]
 
 [tool.pyright]
 typeCheckingMode = "strict"

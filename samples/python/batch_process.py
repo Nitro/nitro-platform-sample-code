@@ -73,38 +73,37 @@ def main(
     typer.echo(f"📋 Found {len(files)} file(s) matching '{pattern}'\n")
 
     # Initialize API client (loads credentials from .env)
-    client = PlatformAPIClient()
+    with PlatformAPIClient.build() as client:
+        # Process each document
+        success_count = 0
+        failed_count = 0
 
-    # Process each document
-    success_count = 0
-    failed_count = 0
+        for i, file_path in enumerate(files, 1):
+            typer.echo(f"[{i}/{len(files)}] Processing: {file_path.name}")
 
-    for i, file_path in enumerate(files, 1):
-        typer.echo(f"[{i}/{len(files)}] Processing: {file_path.name}")
+            try:
+                # Convert to target format
+                typer.echo(f"  🔄 Converting to {to_format.value.upper()}...")
+                converted = client.convert(file_path, to_format.value)
 
-        try:
-            # Convert to target format
-            typer.echo(f"  🔄 Converting to {to_format.value.upper()}...")
-            converted = client.convert(file_path, to_format.value)
+                # Save converted file
+                output_file = output_folder / f"{file_path.stem}.{to_format.value}"
+                output_file.write_bytes(converted)
 
-            # Save converted file
-            output_file = output_folder / f"{file_path.stem}.{to_format.value}"
-            output_file.write_bytes(converted)
+                typer.echo(f"  ✅ Converted: {output_file.name}\n")
+                success_count += 1
 
-            typer.echo(f"  ✅ Converted: {output_file.name}\n")
-            success_count += 1
+            except Exception as e:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+                typer.echo(f"  ❌ FAILED: {e}\n")
+                failed_count += 1
 
-        except Exception as e:  # noqa: BLE001  # pylint: disable=broad-exception-caught
-            typer.echo(f"  ❌ FAILED: {e}\n")
-            failed_count += 1
-
-    # Display summary
-    typer.echo("=" * 60)
-    typer.echo(f"✅ {success_count} file(s) converted to {to_format.value.upper()}")
-    if failed_count > 0:
-        typer.echo(f"⚠️  {failed_count} file(s) FAILED to convert!")
-    typer.echo(f"📂 Output: {output_folder.absolute()}")
-    typer.echo("=" * 60)
+        # Display summary
+        typer.echo("=" * 60)
+        typer.echo(f"✅ {success_count} file(s) converted to {to_format.value.upper()}")
+        if failed_count > 0:
+            typer.echo(f"⚠️  {failed_count} file(s) FAILED to convert!")
+        typer.echo(f"📂 Output: {output_folder.absolute()}")
+        typer.echo("=" * 60)
 
 
 if __name__ == "__main__":

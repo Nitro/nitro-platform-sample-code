@@ -51,7 +51,7 @@ tasks:
   optimize-benchmark:
     desc: "Benchmark the Optimize API on a folder of PDFs, with an HTML report (e.g., task optimize-benchmark INPUT_DIR=./pdfs OUTPUT_DIR=./output)"
     cmds:
-      - uv run python optimize_benchmark.py "{{.INPUT_DIR}}" "{{.OUTPUT_DIR}}"
+      - uv run ./optimize_benchmark.py "{{.INPUT_DIR}}" "{{.OUTPUT_DIR}}"
     requires:
       vars: [INPUT_DIR, OUTPUT_DIR]
 

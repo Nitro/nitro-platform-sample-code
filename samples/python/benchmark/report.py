@@ -6,8 +6,6 @@ logo and every chart, so the finished report is one file that opens straight
 from disk and can be handed to someone else as-is.
 """
 
-from __future__ import annotations
-
 import base64
 import csv
 import html
@@ -15,17 +13,34 @@ import json
 import math
 import statistics
 from collections import defaultdict
-from dataclasses import asdict, fields
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from .operations import OperationResult
+from .operations import OperationResult, OperationSuccess
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-CSV_FIELDS = [f.name for f in fields(OperationResult)]
+# Every field either variant can produce; a variant that lacks a given field
+# just leaves that CSV column blank (csv.DictWriter's default for missing keys).
+CSV_FIELDS = [
+    "file",
+    "operation",
+    "variant",
+    "status",
+    "input_bytes",
+    "output_bytes",
+    "reduction_pct",
+    "duration_ms",
+    "output_path",
+    "http_status",
+    "error_type",
+    "error_message",
+    "request_id",
+    "job_id",
+]
 HERE = Path(__file__).resolve().parent
 ASSETS = HERE / "assets"
 LOGO_PATH = ASSETS / "nitro_logo.png"
@@ -82,9 +97,9 @@ def summarise(results: list[OperationResult]) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     for (operation, variant), items in sorted(groups.items()):
         succeeded = [r for r in items if r.status == "success"]
-        reductions = [r.reduction_pct for r in succeeded if r.reduction_pct is not None]
+        reductions = [r.reduction_pct for r in succeeded]
         total_in = sum(r.input_bytes for r in succeeded)
-        total_out = sum(r.output_bytes or 0 for r in succeeded)
+        total_out = sum(r.output_bytes for r in succeeded)
         overall = round((1 - total_out / total_in) * 100, 2) if total_in else None
         mean_duration = (
             round(statistics.mean(r.duration_ms for r in items) / 1000, 2) if items else None
@@ -358,8 +373,8 @@ def _kpis(results: list[OperationResult]) -> str:
     total = len(results)
     succeeded = [r for r in results if r.status == "success"]
     total_in = sum(r.input_bytes for r in succeeded)
-    total_out = sum(r.output_bytes or 0 for r in succeeded)
-    reductions = [r.reduction_pct for r in succeeded if r.reduction_pct is not None]
+    total_out = sum(r.output_bytes for r in succeeded)
+    reductions = [r.reduction_pct for r in succeeded]
 
     mean_reduction = f"{statistics.mean(reductions):.1f}%" if reductions else "-"
     overall = f"{(1 - total_out / total_in) * 100:.1f}%" if total_in else "-"
@@ -452,30 +467,43 @@ def _rows_for_table(
     """Flatten the results for the table, with the chosen profile listed first."""
 
     def sort_key(result: OperationResult) -> tuple[bool, str, float, str]:
+        reduction = result.reduction_pct if isinstance(result, OperationSuccess) else -1e9
         return (
             result.variant != preferred,
             result.variant,
-            -(result.reduction_pct if result.reduction_pct is not None else -1e9),
+            -reduction,
             result.file,
         )
 
-    return [
-        {
+    def to_row(r: OperationResult) -> dict[str, object]:
+        common: dict[str, object] = {
             "file": r.file,
             "profile": r.variant,
             "status": r.status,
             "input_bytes": r.input_bytes,
-            "output_bytes": r.output_bytes,
-            "reduction_pct": r.reduction_pct,
             "duration_s": round(r.duration_ms / 1000, 1),
+        }
+        if isinstance(r, OperationSuccess):
+            return common | {
+                "output_bytes": r.output_bytes,
+                "reduction_pct": r.reduction_pct,
+                "http_status": None,
+                "error_type": None,
+                "error_message": None,
+                "request_id": None,
+                "job_id": None,
+            }
+        return common | {
+            "output_bytes": None,
+            "reduction_pct": None,
             "http_status": r.http_status,
             "error_type": r.error_type,
             "error_message": r.error_message,
             "request_id": r.request_id,
             "job_id": r.job_id,
         }
-        for r in sorted(results, key=sort_key)
-    ]
+
+    return [to_row(r) for r in sorted(results, key=sort_key)]
 
 
 def _initial_tbody(rows: list[dict[str, object]]) -> str:
@@ -589,11 +617,7 @@ def _reduction_series(
     succeeded = [r for r in results if r.status == "success"]
     series: dict[str, list[float]] = {}
     for name in profiles:
-        values = [
-            float(r.reduction_pct)
-            for r in succeeded
-            if r.variant == name and r.reduction_pct is not None
-        ]
+        values = [r.reduction_pct for r in succeeded if r.variant == name]
         if values:
             series[name] = values
     return series
