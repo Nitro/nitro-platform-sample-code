@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
     from pathlib import Path
 
+    from httpx2._types import RequestFiles as FilesParam
+
 
 class _JobEventBase(BaseModel):
     """Fields shared by every job status-stream SSE event."""
@@ -126,7 +128,22 @@ def _get_mime_type_from_path(path: Path) -> str:
 
 @dataclass
 class PlatformAPIClient(BaseOAuthClient):
-    """Synchronous client for Nitro Platform API operations."""
+    """Client for Nitro Platform API operations.
+
+    Almost every operation goes through the async job flow (submit with
+    ``Prefer: respond-async``, follow the SSE status stream, fetch the
+    result) with the file uploaded via a presigned URL first — see
+    ``_submit_async_job``. That combination streams the upload instead of
+    buffering it in memory and won't time out on a slow job, so it's the
+    right default even for small files.
+
+    The synchronous, non-presigned ``_request`` path (used only by
+    ``extract_text``) is the deliberate exception: it's for operations you
+    know will always run against small, bounded documents — e.g. pulling
+    text out of a one-page expense report you know will always be a few KB
+    — where the extra round trip to mint a presigned URL and poll a job
+    isn't worth it.
+    """
 
     def _request(
         self,
@@ -135,39 +152,22 @@ class PlatformAPIClient(BaseOAuthClient):
         file_path: Path,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        """Make API request with file upload."""
+        """Make a synchronous request, uploading the file directly rather than via a
+        presigned URL. See the class docstring for when this is (and isn't) appropriate.
+        """
         response = self._client.post(
             endpoint,
             files={
-                "file": self._upload(file_path, _get_mime_type_from_path(file_path), file_path.name)
+                "file": (
+                    file_path.name,
+                    file_path.read_bytes(),
+                    _get_mime_type_from_path(file_path),
+                )
             },
             data={"method": method, "params": json.dumps(params or {})},
         )
         response.raise_for_status()
         return response.json()
-
-    def _request_bytes(
-        self,
-        endpoint: Literal["conversions", "extractions", "transformations"],
-        method: str,
-        file_path: Path,
-        params: dict[str, Any] | None = None,
-    ) -> bytes:
-        """Make API request and return raw bytes."""
-        response = self._client.post(
-            endpoint,
-            files={
-                "file": self._upload(file_path, _get_mime_type_from_path(file_path), file_path.name)
-            },
-            data={"method": method, "params": json.dumps(params or {})},
-        )
-
-        response.raise_for_status()
-        result = response.json()
-
-        # Download from S3 URL
-        download_url = result["result"]["file"]["URL"]
-        return self._download_from_url(download_url, description=f"Downloading {file_path.name}...")
 
     def _iter_job_events(
         self, status_url: str, request_id: str, *, job_timeout_seconds: float = 300
@@ -213,30 +213,31 @@ class PlatformAPIClient(BaseOAuthClient):
             request_id=request_id,
         )
 
-    def _request_async_bytes(
+    def _submit_async_job(
         self,
         endpoint: Literal["conversions", "extractions", "transformations"],
         method: str,
-        file_path: Path,
+        files: FilesParam,
         params: dict[str, Any] | None = None,
-    ) -> bytes:
-        """Run an operation as an asynchronous job and return the resulting bytes.
+        *,
+        description: str,
+    ) -> dict[str, Any]:
+        """Submit an operation as an asynchronous job, follow it to completion, and return the
+        parsed JSON result.
 
-        Unlike the synchronous helpers, this submits the work with
-        ``Prefer: respond-async`` and then follows the job to completion, so
-        documents large enough to exceed the synchronous request window are
-        processed successfully instead of timing out on the client.
+        Submits the work with ``Prefer: respond-async`` and follows the job to
+        completion via the SSE status stream, so documents large enough to
+        exceed the synchronous request window are processed successfully
+        instead of timing out on the client.
 
         Raises:
-            JobFailedError: if the submission, the job, or the download fails.
+            JobFailedError: if the submission, the job, or the result fetch fails.
         """
         request_id = str(uuid.uuid7())
         response = self._client.post(
             endpoint,
             headers={"Prefer": "respond-async", "X-Analytics-Session-Id": request_id},
-            files={
-                "file": self._upload(file_path, _get_mime_type_from_path(file_path), file_path.name)
-            },
+            files=files,
             data={"method": method, "params": json.dumps(params or {})},
         )
         if response.status_code != httpx2.codes.ACCEPTED.value:
@@ -249,9 +250,7 @@ class PlatformAPIClient(BaseOAuthClient):
             )
 
         status_url = response.headers["Location"]
-        redirect = self._await_job(
-            status_url, request_id, description=f"Running {file_path.name}..."
-        )
+        redirect = self._await_job(status_url, request_id, description=description)
         analytics_header = {"X-Analytics-Session-Id": request_id}
 
         if redirect.status == "failed":
@@ -268,14 +267,43 @@ class PlatformAPIClient(BaseOAuthClient):
         if result.status_code != httpx2.codes.OK.value:
             error_type, title = _problem_detail(result.content)
             raise JobFailedError(
-                title or f"Result download failed with HTTP {result.status_code}",
+                title or f"Result fetch failed with HTTP {result.status_code}",
                 status_code=result.status_code,
                 error_type=error_type,
                 request_id=request_id,
             )
+        return result.json()
 
-        # Download from S3 URL
-        download_url = result.json()["result"]["file"]["URL"]
+    def _request_async(
+        self,
+        endpoint: Literal["conversions", "extractions", "transformations"],
+        method: str,
+        file_path: Path,
+        params: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Run an operation as an asynchronous job and return the parsed JSON result."""
+        files = {
+            "file": self._upload(file_path, _get_mime_type_from_path(file_path), file_path.name)
+        }
+        return self._submit_async_job(
+            endpoint, method, files, params, description=f"Running {file_path.name}..."
+        )
+
+    def _request_async_bytes(
+        self,
+        endpoint: Literal["conversions", "extractions", "transformations"],
+        method: str,
+        file_path: Path,
+        params: dict[str, Any] | None = None,
+    ) -> bytes:
+        """Run an operation as an asynchronous job and return the resulting bytes."""
+        files = {
+            "file": self._upload(file_path, _get_mime_type_from_path(file_path), file_path.name)
+        }
+        result = self._submit_async_job(
+            endpoint, method, files, params, description=f"Running {file_path.name}..."
+        )
+        download_url = result["result"]["file"]["URL"]
         return self._download_from_url(
             download_url, description=f"Downloading result for {file_path.name}..."
         )
@@ -300,41 +328,46 @@ class PlatformAPIClient(BaseOAuthClient):
 
     def convert(self, file_path: Path, to_format: str) -> bytes:
         """Convert document to specified format."""
-        return self._request_bytes("conversions", "convert", file_path, {"to": to_format})
+        return self._request_async_bytes("conversions", "convert", file_path, {"to": to_format})
 
     def extract_text(self, file_path: Path) -> dict[str, Any]:
-        """Extract text from document."""
+        """Extract text from document.
+
+        Runs synchronously without a presigned URL — see the class
+        docstring for why this operation is the exception to the async +
+        presigned-URL default.
+        """
         return self._request("extractions", "extract-text", file_path)
 
     def extract_forms(self, file_path: Path) -> dict[str, Any]:
         """Extract form data from PDF."""
-        return self._request("extractions", "extract-forms", file_path)
+        return self._request_async("extractions", "extract-forms", file_path)
 
     def extract_tables(self, file_path: Path) -> dict[str, Any]:
         """Extract table data from PDF."""
-        return self._request("extractions", "extract-tables", file_path)
+        return self._request_async("extractions", "extract-tables", file_path)
 
     def detect_pii(self, file_path: Path, language: str = "en") -> dict[str, Any]:
         """Detect PII and return bounding boxes."""
-        return self._request(
+        return self._request_async(
             "extractions", "extract-pii-bounding-boxes", file_path, {"language": language}
         )
 
     def find_text_boxes(self, file_path: Path, texts: list[str]) -> dict[str, Any]:
         """Find bounding boxes for specified text strings."""
-        return self._request(
+        return self._request_async(
             "extractions", "extract-text-bounding-boxes", file_path, {"texts": texts}
         )
 
     def redact(self, file_path: Path, redactions: list[dict[str, Any]]) -> bytes:
         """Redact specified bounding boxes."""
-        return self._request_bytes(
+        return self._request_async_bytes(
             "transformations", "redact", file_path, {"redactions": redactions}
         )
 
     def password_protect(self, file_path: Path, password: str) -> bytes:
         """Add password protection to PDF."""
-        return self._request_bytes(
+        return self._request_async_bytes(
             "transformations",
             "protect",
             file_path,
@@ -343,11 +376,15 @@ class PlatformAPIClient(BaseOAuthClient):
 
     def compress(self, file_path: Path, level: int = 2) -> bytes:
         """Compress PDF (level 1-3)."""
-        return self._request_bytes("transformations", "compress", file_path, {"level": level})
+        return self._request_async_bytes(
+            "transformations", "compress", file_path, {"level": level}
+        )
 
     def set_properties(self, file_path: Path, properties: dict[str, str]) -> bytes:
         """Set or clear PDF metadata properties."""
-        return self._request_bytes("transformations", "set-properties", file_path, properties)
+        return self._request_async_bytes(
+            "transformations", "set-properties", file_path, properties
+        )
 
     def merge(self, file_paths: list[Path]) -> bytes:
         """Merge multiple PDFs."""
@@ -358,10 +395,11 @@ class PlatformAPIClient(BaseOAuthClient):
             )
             for file_path in file_paths
         ]
-        response = self._client.post(
-            "/transformations",
-            files=files,
-            data={"method": "merge", "params": "{}"},
+        result = self._submit_async_job(
+            "transformations",
+            "merge",
+            files,
+            description=f"Running merge of {len(file_paths)} files...",
         )
-        response.raise_for_status()
-        return response.content
+        download_url = result["result"]["file"]["URL"]
+        return self._download_from_url(download_url, description="Downloading merged file...")
