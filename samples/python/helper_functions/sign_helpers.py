@@ -2,8 +2,6 @@
 Sign API helper utilities for envelope operations.
 """
 
-from __future__ import annotations
-
 import csv
 import json
 import time
@@ -108,32 +106,8 @@ def _upload_documents_to_envelope(
     document_ids: list[str] = []
 
     for doc in documents:
-        doc_name = doc["name"]
-        doc_binary = doc["binary"]
-
-        # Prepare metadata as JSON string
-        metadata = json.dumps({"name": doc_name})
-
-        # Prepare form-data with binary content
-        files = {
-            "metadata": ("metadata", metadata, "application/json"),
-            "payload": (doc_name, doc_binary, "application/pdf"),
-        }
-
-        token = sign_client.get_token()
-        headers = {"Authorization": f"Bearer {token}"}
-
-        response = sign_client._client.post(
-            f"{sign_client._settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
-            headers=headers,
-            files=files,
-        )
-
-        response.raise_for_status()
-        document = response.json()
-
-        document_id = document["ID"]
-        document_ids.append(document_id)
+        document = sign_client.create_document(envelope_id, Path(doc["path"]), doc["name"])
+        document_ids.append(document["ID"])
 
     return document_ids
 

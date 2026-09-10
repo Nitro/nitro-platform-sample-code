@@ -52,68 +52,67 @@ def main(
     print(f"📋 Found {len(files)} PDF document(s) to process")
 
     # Initialize API client
-    client = PlatformAPIClient()
+    with PlatformAPIClient.build() as client:
+        # Process each document
+        success_count = 0
+        failed_count = 0
+        total_pii_count = 0
 
-    # Process each document
-    success_count = 0
-    failed_count = 0
-    total_pii_count = 0
+        for i, pdf_file in enumerate(files, 1):
+            print(f"[{i}/{len(files)}] Processing: {pdf_file.name}")
 
-    for i, pdf_file in enumerate(files, 1):
-        print(f"[{i}/{len(files)}] Processing: {pdf_file.name}")
+            try:
+                # Step 1: Detect PII in the document
+                print("  🔍 Detecting PII...")
+                pii_data = client.detect_pii(pdf_file)
 
-        try:
-            # Step 1: Detect PII in the document
-            print("  🔍 Detecting PII...")
-            pii_data = client.detect_pii(pdf_file)
+                # Extract PII bounding boxes from response
+                pii_boxes = pii_data.get("result", {}).get("PIIBoxes", [])
 
-            # Extract PII bounding boxes from response
-            pii_boxes = pii_data.get("result", {}).get("PIIBoxes", [])
+                if not pii_boxes:
+                    print("  ℹ️  No PII detected - copying original file")  # noqa: RUF001
 
-            if not pii_boxes:
-                print("  ℹ️  No PII detected - copying original file")  # noqa: RUF001
+                    # Copy original file to output if no PII found
+                    output_file = output_folder / pdf_file.name
+                    output_file.write_bytes(pdf_file.read_bytes())
 
-                # Copy original file to output if no PII found
+                    print(f"  ✅ Saved: {output_file.name}")
+
+                    success_count += 1
+                    continue
+
+                print(f"  🎯 Found {len(pii_boxes)} PII instance(s)")
+                total_pii_count += len(pii_boxes)
+
+                # Step 2: Prepare redaction coordinates
+                print("  🔒 Applying redactions...")
+                redactions = [
+                    {"pageIndex": box["pageIndex"], "boundingBox": box["boundingBox"]}
+                    for box in pii_boxes
+                ]
+
+                # Step 3: Apply redactions to document
+                redacted_pdf = client.redact(pdf_file, redactions)
+
+                # Save redacted PDF
                 output_file = output_folder / pdf_file.name
-                output_file.write_bytes(pdf_file.read_bytes())
+                output_file.write_bytes(redacted_pdf)
 
-                print(f"  ✅ Saved: {output_file.name}")
-
+                print(f"  ✅ Redacted: {output_file.name}")
                 success_count += 1
-                continue
 
-            print(f"  🎯 Found {len(pii_boxes)} PII instance(s)")
-            total_pii_count += len(pii_boxes)
+            except Exception as e:  # noqa: BLE001
+                print(f"  ❌ FAILED: {e}")
+                failed_count += 1
 
-            # Step 2: Prepare redaction coordinates
-            print("  🔒 Applying redactions...")
-            redactions = [
-                {"pageIndex": box["pageIndex"], "boundingBox": box["boundingBox"]}
-                for box in pii_boxes
-            ]
-
-            # Step 3: Apply redactions to document
-            redacted_pdf = client.redact(pdf_file, redactions)
-
-            # Save redacted PDF
-            output_file = output_folder / pdf_file.name
-            output_file.write_bytes(redacted_pdf)
-
-            print(f"  ✅ Redacted: {output_file.name}")
-            success_count += 1
-
-        except Exception as e:  # noqa: BLE001
-            print(f"  ❌ FAILED: {e}")
-            failed_count += 1
-
-    # Display summary
-    print("=" * 60)
-    print(f"✅ {success_count} document(s) processed")
-    print(f"🔒 {total_pii_count} total PII instance(s) redacted")
-    if failed_count > 0:
-        print(f"⚠️  {failed_count} document(s) FAILED - review manually!")
-    print(f"📂 Output: {output_folder.absolute()}")
-    print("=" * 60)
+        # Display summary
+        print("=" * 60)
+        print(f"✅ {success_count} document(s) processed")
+        print(f"🔒 {total_pii_count} total PII instance(s) redacted")
+        if failed_count > 0:
+            print(f"⚠️  {failed_count} document(s) FAILED - review manually!")
+        print(f"📂 Output: {output_folder.absolute()}")
+        print("=" * 60)
 
 
 if __name__ == '__main__':

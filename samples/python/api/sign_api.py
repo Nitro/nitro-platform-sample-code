@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 """Sign API client for Nitro Sign integrations (eSignature operations)."""
 
-from __future__ import annotations
-
 import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-import httpx
+import httpx2
 
 from .base_client import BaseOAuthClient
 
@@ -27,19 +25,16 @@ class SignAPIClient(BaseOAuthClient):
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Make authenticated API request returning JSON."""
-        headers = {"Authorization": f"Bearer {self._get_token()}"}
-
         response = self._client.request(
             method=method,
-            url=f"{self._settings.platform_base_url}{endpoint}",
-            headers=headers,
+            url=endpoint,
             json=json_data,
             params=params,
         )
 
         try:
             response.raise_for_status()
-        except httpx.HTTPError:
+        except httpx2.HTTPError:
             # Try to get error details from response
             try:
                 error_detail = response.json()
@@ -54,12 +49,9 @@ class SignAPIClient(BaseOAuthClient):
         self, method: str, endpoint: str, params: dict[str, Any] | None = None
     ) -> bytes:
         """Make authenticated API request returning binary data."""
-        headers = {"Authorization": f"Bearer {self._get_token()}"}
-
         response = self._client.request(
             method=method,
-            url=f"{self._settings.platform_base_url}{endpoint}",
-            headers=headers,
+            url=endpoint,
             params=params,
         )
 
@@ -128,10 +120,8 @@ class SignAPIClient(BaseOAuthClient):
         Args:
             envelope_id: UUID of the envelope
         """
-        headers = {"Authorization": f"Bearer {self._get_token()}"}
         response = self._client.delete(
-            f"{self._settings.platform_base_url}/sign/envelopes/{envelope_id}",
-            headers=headers,
+            f"/sign/envelopes/{envelope_id}",
         )
         response.raise_for_status()
 
@@ -166,11 +156,8 @@ class SignAPIClient(BaseOAuthClient):
             "payload": (file_path.name, pdf_binary, "application/pdf"),
         }
 
-        headers = {"Authorization": f"Bearer {self._get_token()}"}
-
         response = self._client.post(
-            f"{self._settings.platform_base_url}/sign/envelopes/{envelope_id}/documents",
-            headers=headers,
+            f"/sign/envelopes/{envelope_id}/documents",
             files=files,
         )
 

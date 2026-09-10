@@ -6,20 +6,18 @@ Anything else, including an empty or non-PDF response, is recorded as a failure
 with the detail needed to diagnose it.
 """
 
-from __future__ import annotations
-
 import time
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
-import httpx
+import httpx2
 
 from api.platform_api import JobFailedError
 
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from api.platform_api import PlatformAPIClient
+    from services import OptimizerService
 
 PDF_MAGIC = b"%PDF-"
 
@@ -47,27 +45,41 @@ PROFILES: dict[str, str] = {
     ),
 }
 
-DEFAULT_PROFILE = "minimal-file-size"
 
-
-@dataclass
-class OperationResult:
-    """The outcome of optimizing one file with one profile."""
+@dataclass(slots=True, kw_only=True)
+class _OperationBase:
+    """Fields common to every operation result, success or failure."""
 
     file: str
     operation: str
     variant: str  # the profile that actually produced this row, never assumed
-    status: str  # "success" or "failed"
     input_bytes: int
-    output_bytes: int | None = None
-    reduction_pct: float | None = None
-    duration_ms: int = 0
-    output_path: str | None = None
-    http_status: int | None = None
-    error_type: str | None = None
-    error_message: str | None = None
-    request_id: str | None = None
+    duration_ms: int
+
+
+@dataclass(slots=True, kw_only=True)
+class OperationSuccess(_OperationBase):
+    """A successful run: the API returned a usable PDF for the profile asked for."""
+
+    output_bytes: int
+    reduction_pct: float
+    output_path: str
+    status: Literal["success"] = "success"
+
+
+@dataclass(slots=True, kw_only=True)
+class OperationFailure(_OperationBase):
+    """A failed run, with the detail needed to diagnose it."""
+
+    http_status: int | None
+    error_type: str | None
+    error_message: str
+    request_id: str | None
     job_id: str | None = None
+    status: Literal["failed"] = "failed"
+
+
+type OperationResult = OperationSuccess | OperationFailure
 
 
 def _is_pdf(content: bytes) -> bool:
@@ -85,13 +97,12 @@ def _failure(
     error_type: str | None,
     error_message: str,
     request_id: str | None,
-) -> OperationResult:
+) -> OperationFailure:
     """Build a failed result."""
-    return OperationResult(
+    return OperationFailure(
         file=pdf_path.name,
         operation="optimize",
         variant=profile,
-        status="failed",
         input_bytes=input_bytes,
         duration_ms=duration_ms,
         http_status=http_status,
@@ -102,12 +113,12 @@ def _failure(
 
 
 def run_optimize(
-    client: PlatformAPIClient, pdf_path: Path, profile: str, output_dir: Path
+    optimizer_service: OptimizerService, pdf_path: Path, profile: str, output_dir: Path
 ) -> OperationResult:
     """Optimize one PDF with one profile and record what actually happened.
 
     Args:
-        client: The Platform API client to run the job through.
+        optimizer_service: The Optimizer service to run the job through.
         pdf_path: The PDF to optimize.
         profile: The optimization profile to apply.
         output_dir: Where the optimized PDF is written.
@@ -119,7 +130,7 @@ def run_optimize(
     started = time.perf_counter()
 
     try:
-        content = client.optimize(pdf_path, profile)
+        content = optimizer_service.optimize(pdf_path, profile)
     except JobFailedError as exc:
         return _failure(
             pdf_path,
@@ -131,7 +142,7 @@ def run_optimize(
             error_message=exc.message,
             request_id=exc.request_id,
         )
-    except httpx.HTTPStatusError as exc:
+    except httpx2.HTTPStatusError as exc:
         # e.g. a 401 from the token endpoint: caught here so a failed run is
         # recorded rather than the traceback (with its locals) being dumped.
         return _failure(
@@ -144,7 +155,7 @@ def run_optimize(
             error_message=f"HTTP {exc.response.status_code} from {exc.request.url.path}",
             request_id=None,
         )
-    except httpx.HTTPError as exc:
+    except httpx2.HTTPError as exc:
         return _failure(
             pdf_path,
             profile,
@@ -179,11 +190,10 @@ def run_optimize(
     output_bytes = len(content)
     reduction = (1.0 - output_bytes / input_bytes) * 100.0 if input_bytes else 0.0
 
-    return OperationResult(
+    return OperationSuccess(
         file=pdf_path.name,
         operation="optimize",
         variant=profile,
-        status="success",
         input_bytes=input_bytes,
         output_bytes=output_bytes,
         reduction_pct=round(reduction, 2),
