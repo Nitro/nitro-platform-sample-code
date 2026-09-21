@@ -445,7 +445,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"cliendID\": \"<application_client_id>\",\n    \"clientSecret\": \"<application_client_secret_key>\"\n}",
+							"raw": "{\n    \"clientID\": \"<application_client_id>\",\n    \"clientSecret\": \"<application_client_secret_key>\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
