@@ -800,11 +800,11 @@
               "formdata": [
                 {
                   "key": "method",
-                  "value": "extract-text-bounding-boxes"
+                  "value": "text-bounding-boxes"
                 },
                 {
                   "key": "params",
-                  "value": "{  \"texts\": [    \"Professional\",    \"Location\"  ]}"
+                  "value": "{ \"queries\": [ {\"text\": \"Professional\"}, {\"text\": \"Location\"} ] }"
                 },
                 {
                   "key": "file",
@@ -1008,7 +1008,7 @@
                 },
                 {
                   "key": "params",
-                  "value": "{\n    \"redactions\": [\n        {\n            \"pageIndex\": 0,\n            \"boundingBox\": [\n                0.181746726,\n                0.170494927,\n                0.308388903,\n                0.188994937\n            ],\n            \"PIIType\": \"PHONE\",\n            \"confidence\": 0.99\n        },\n        {\n            \"pageIndex\": 0,\n            \"boundingBox\": [\n                0.117687911,\n                0.106075797,\n                0.234256545,\n                0.124575798\n            ],\n            \"PIIType\": \"NAME\",\n            \"confidence\": 0.99\n        }\n   ]\n}\n"
+                  "value": "{\n    \"redactions\": [\n        {\n            \"pageIndex\": 0,\n            \"boundingBox\": [100.0, 100.0, 200.0, 120.0]\n        },\n        {\n            \"pageIndex\": 0,\n            \"boundingBox\": [50.0, 50.0, 150.0, 70.0]\n        }\n   ]\n}\n"
                 },
                 {
                   "key": "file",
@@ -1068,7 +1068,7 @@
                 },
                 {
                   "key": "params",
-                  "value": "{\"level\": 2}"
+                  "value": "{}"
                 },
                 {
                   "key": "file",
@@ -1086,7 +1086,7 @@
                 "transformations"
               ]
             },
-            "description": "Compress the PDF size."
+            "description": "Compress the PDF size. Takes no parameters; it always targets the smallest practical file size. For control over the size/quality trade-off, use Optimize and its `profile` parameter."
           },
           "response": []
         },
@@ -1124,11 +1124,11 @@
               "formdata": [
                 {
                   "key": "method",
-                  "value": "compress"
+                  "value": "optimize"
                 },
                 {
                   "key": "params",
-                  "value": "{\"level\": 2}"
+                  "value": "{\"profile\": \"web\"}"
                 },
                 {
                   "key": "file",
@@ -1146,7 +1146,7 @@
                 "transformations"
               ]
             },
-            "description": "Compress the PDF size."
+            "description": "Optimize the PDF for a specific use case via `profile`: web, print, archive, minimal-file-size, or mixed-raster-content."
           },
           "response": []
         },
@@ -1665,14 +1665,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/jobs/{{jobId}}/result",
+              "raw": "{{baseUrl}}/jobs/{{jobId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "jobs",
-                "{{jobId}}",
-                "result"
+                "{{jobId}}"
               ]
             },
             "description": "Retrieve the result for an asynchronous job by ID."
