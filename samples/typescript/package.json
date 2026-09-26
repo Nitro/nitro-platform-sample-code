@@ -22,7 +22,7 @@
     "dotenv": "^16.0.0",
     "form-data": "^4.0.0",
     "csv-parse": "^5.5.0",
-    "adm-zip": "^0.5.10",
+    "adm-zip": "^0.5.17",
     "mime-types": "^2.1.35"
   },
   "devDependencies": {
