@@ -354,9 +354,12 @@ class PlatformAPIClient(BaseOAuthClient):
         )
 
     def find_text_boxes(self, file_path: Path, texts: list[str]) -> dict[str, Any]:
-        """Find bounding boxes for specified text strings."""
+        """Find bounding boxes for specified text strings (literal, case-sensitive)."""
         return self._request_async(
-            "extractions", "extract-text-bounding-boxes", file_path, {"texts": texts}
+            "extractions",
+            "text-bounding-boxes",
+            file_path,
+            {"queries": [{"text": text} for text in texts]},
         )
 
     def redact(self, file_path: Path, redactions: list[dict[str, Any]]) -> bytes:

@@ -145,13 +145,15 @@ export class PlatformAPIClient extends BaseOAuthClient {
   }
 
   /**
-   * Find bounding boxes for specified text strings.
+   * Find bounding boxes for specified text strings (literal, case-sensitive).
    * @param filePath - Path to input file.
    * @param texts - Array of text strings to search for.
-   * @returns Bounding boxes for found text.
+   * @returns Bounding boxes for found text, nested as textBoxes[].matches[].boxes[].
    */
   async findTextBoxes(filePath: string, texts: string[]): Promise<any> {
-    return this.request('extractions', 'extract-text-bounding-boxes', filePath, { texts });
+    return this.request('extractions', 'text-bounding-boxes', filePath, {
+      queries: texts.map(text => ({ text })),
+    });
   }
 
   /**
