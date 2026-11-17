@@ -22,8 +22,8 @@ KEYWORD REDACTION FEATURES:
   ✓ Whole document scanning (all pages)
   ✓ Exact location detection
   ✓ Permanent redaction (unrecoverable)
-  ⏳ Case-insensitive matching (feature in development)
-  ⏳ Regex pattern support (feature in development)
+  ✓ Case-sensitive literal matching (the API also supports regular
+    expressions and case-insensitive matching via isRegex/regexFlags)
 
 USAGE:  
    npm run redact-keyword -- <input_pdf> <output_pdf> <keyword1> [keyword2 ...]
@@ -37,6 +37,36 @@ import { program } from 'commander';
 import { stat, mkdir, writeFile, copyFile } from 'fs/promises';
 import { dirname } from 'path';
 import { PlatformAPIClient } from '../api/platform-api.js';
+
+interface Redaction {
+  pageIndex: number;
+  boundingBox: number[];
+}
+
+/**
+ * Collect the boxes of a text-bounding-boxes result into Redact's `redactions`.
+ *
+ * Boxes are nested as textBoxes[].matches[].boxes[] (one entry per query, then one
+ * per match, then one box per line of the match). `groups` is ignored: its boxes
+ * cover parts of the match. Identical boxes, which only occur when two keywords
+ * match the same text, are sent once.
+ */
+function searchResultToRedactions(searchResponse: any): Redaction[] {
+  const searchResult = searchResponse.result ?? searchResponse;
+  const seen = new Set<string>();
+  const redactions: Redaction[] = [];
+  for (const queryResult of searchResult.textBoxes) {
+    for (const match of queryResult.matches) {
+      for (const box of match.boxes) {
+        const key = JSON.stringify([box.pageIndex, box.boundingBox]);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        redactions.push({ pageIndex: box.pageIndex, boundingBox: box.boundingBox });
+      }
+    }
+  }
+  return redactions;
+}
 
 program
   .name('redact-by-keyword')
@@ -72,10 +102,10 @@ program
 
       const bboxData = await client.findTextBoxes(inputPdf, keywords);
 
-      // Extract text box locations from response
-      const textBoxes = bboxData.result?.textBoxes || [];
+      // Step 2: Collect the matches' boxes into redaction coordinates
+      const redactions = searchResultToRedactions(bboxData);
 
-      if (textBoxes.length === 0) {
+      if (redactions.length === 0) {
         console.log('ℹ️  No keyword matches found - copying original file');
         // Copy original file to output if no keywords found
         await copyFile(inputPdf, outputPdf);
@@ -84,14 +114,8 @@ program
         return;
       }
 
-      console.log(`🎯 Found ${textBoxes.length} keyword instance(s) to redact`);
-
-      // Step 2: Prepare redaction coordinates
+      console.log(`🎯 Found ${redactions.length} area(s) to redact`);
       console.log('🔒 Applying redactions...');
-      const redactions = textBoxes.map((box: any) => ({
-        pageIndex: box.pageIndex,
-        boundingBox: box.boundingBox,
-      }));
 
       // Step 3: Apply redactions to document
       const redactedPdf = await client.redact(inputPdf, redactions);
@@ -101,7 +125,7 @@ program
 
       // Display success message
       console.log('✅ Redaction successful!');
-      console.log(`🔒 Redacted: ${textBoxes.length} instance(s)`);
+      console.log(`🔒 Redacted: ${redactions.length} area(s)`);
       console.log(`📄 Input:  ${inputPdf.split('/').pop()}`);
       console.log(`📄 Output: ${outputPdf.split('/').pop()}`);
       console.log(`📂 Saved to: ${outputPdf}`);

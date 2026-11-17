@@ -26,8 +26,8 @@ KEYWORD REDACTION FEATURES:
   ✓ Whole document scanning (all pages)
   ✓ Exact location detection
   ✓ Permanent redaction (unrecoverable)
-  ⏳ Case-insensitive matching (feature in development)
-  ⏳ Regex pattern support (feature in development)
+  ✓ Case-sensitive literal matching (the API also supports regular
+    expressions and case-insensitive matching via isRegex/regexFlags)
 
 USAGE:
   python redact_by_keyword.py <input_pdf> <output_pdf> <keyword1> [keyword2 ...]
@@ -38,7 +38,7 @@ EXAMPLES:
 """
 
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 
@@ -46,6 +46,30 @@ from api import FatalError
 from api.platform_api import PlatformAPIClient
 
 app = typer.Typer()
+
+
+def search_result_to_redactions(search_response: dict[str, Any]) -> list[dict[str, Any]]:
+    """Collect the boxes of a text-bounding-boxes result into Redact's `redactions`.
+
+    Boxes are nested as textBoxes[].matches[].boxes[] (one entry per query, then one
+    per match, then one box per line of the match). `groups` is ignored: its boxes
+    cover parts of the match. Identical boxes, which only occur when two keywords
+    match the same text, are sent once.
+    """
+    search_result = search_response.get('result', search_response)
+    seen: set[tuple[int, tuple[float, ...]]] = set()
+    redactions: list[dict[str, Any]] = []
+    for query_result in search_result['textBoxes']:
+        for match in query_result['matches']:
+            for box in match['boxes']:
+                key = (box['pageIndex'], tuple(box['boundingBox']))
+                if key in seen:
+                    continue
+                seen.add(key)
+                redactions.append(
+                    {'pageIndex': box['pageIndex'], 'boundingBox': box['boundingBox']}
+                )
+    return redactions
 
 
 @app.command()
@@ -75,10 +99,10 @@ def main(
 
             bbox_data = client.find_text_boxes(input_pdf, keywords)
 
-            # Extract text box locations from response
-            text_boxes = bbox_data.get('result', {}).get('textBoxes', [])
+            # Step 2: Collect the matches' boxes into redaction coordinates
+            redactions = search_result_to_redactions(bbox_data)
 
-            if not text_boxes:
+            if not redactions:
                 print('ℹ️  No keyword matches found - copying original file')  # noqa: RUF001
                 # Copy original file to output if no keywords found
                 output_pdf.write_bytes(input_pdf.read_bytes())
@@ -86,14 +110,8 @@ def main(
                 print(f'📂 Output: {output_pdf.absolute()}')
                 return
 
-            print(f'🎯 Found {len(text_boxes)} keyword instance(s) to redact')
-
-            # Step 2: Prepare redaction coordinates
-            print("🔒 Applying redactions...")
-            redactions = [
-                {"pageIndex": box["pageIndex"], "boundingBox": box["boundingBox"]}
-                for box in text_boxes
-            ]
+            print(f'🎯 Found {len(redactions)} area(s) to redact')
+            print('🔒 Applying redactions...')
 
             # Step 3: Apply redactions to document
             redacted_pdf = client.redact(input_pdf, redactions)
@@ -103,7 +121,7 @@ def main(
 
             # Display success message
             print('✅ Redaction successful!')
-            print(f'🔒 Redacted: {len(text_boxes)} instance(s)')
+            print(f'🔒 Redacted: {len(redactions)} area(s)')
             print(f'📄 Input:  {input_pdf.name}')
             print(f'📄 Output: {output_pdf.name}')
             print(f'📂 Saved to: {output_pdf.absolute()}')
