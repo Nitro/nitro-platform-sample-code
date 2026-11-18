@@ -38,9 +38,31 @@ import { stat, mkdir, writeFile, copyFile } from 'fs/promises';
 import { dirname } from 'path';
 import { PlatformAPIClient } from '../api/platform-api.js';
 
+/** x, y, width, height, in points */
+type BoundingBox = [number, number, number, number];
+
+interface Box {
+  pageIndex: number;
+  boundingBox: BoundingBox;
+  textPiece: string;
+}
+
+interface Match {
+  matchedText: string;
+  boxes: Box[];
+}
+
+interface QueryResult {
+  matches: Match[];
+}
+
+interface TextBoxesResult {
+  textBoxes: QueryResult[];
+}
+
 interface Redaction {
   pageIndex: number;
-  boundingBox: number[];
+  boundingBox: BoundingBox;
 }
 
 /**
@@ -51,8 +73,7 @@ interface Redaction {
  * cover parts of the match. Identical boxes, which only occur when two keywords
  * match the same text, are sent once.
  */
-function searchResultToRedactions(searchResponse: any): Redaction[] {
-  const searchResult = searchResponse.result ?? searchResponse;
+function searchResultToRedactions(searchResult: TextBoxesResult): Redaction[] {
   const seen = new Set<string>();
   const redactions: Redaction[] = [];
   for (const queryResult of searchResult.textBoxes) {
@@ -103,7 +124,7 @@ program
       const bboxData = await client.findTextBoxes(inputPdf, keywords);
 
       // Step 2: Collect the matches' boxes into redaction coordinates
-      const redactions = searchResultToRedactions(bboxData);
+      const redactions = searchResultToRedactions(bboxData.result);
 
       if (redactions.length === 0) {
         console.log('ℹ️  No keyword matches found - copying original file');

@@ -13,7 +13,7 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn
 from .base_client import BaseOAuthClient, FatalError
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Mapping, Sequence
     from pathlib import Path
 
     from httpx2._types import RequestFiles as FilesParam
@@ -362,7 +362,7 @@ class PlatformAPIClient(BaseOAuthClient):
             {"queries": [{"text": text} for text in texts]},
         )
 
-    def redact(self, file_path: Path, redactions: list[dict[str, Any]]) -> bytes:
+    def redact(self, file_path: Path, redactions: Sequence[Mapping[str, object]]) -> bytes:
         """Redact specified bounding boxes."""
         return self._request_async_bytes(
             "transformations", "redact", file_path, {"redactions": redactions}
