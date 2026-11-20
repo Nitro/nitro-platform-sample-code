@@ -38,7 +38,7 @@ EXAMPLES:
 """
 
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, TypedDict
 
 import typer
 
@@ -47,8 +47,34 @@ from api.platform_api import PlatformAPIClient
 
 app = typer.Typer()
 
+BoundingBox = tuple[float, float, float, float]  # x, y, width, height, in points
 
-def search_result_to_redactions(search_response: dict[str, Any]) -> list[dict[str, Any]]:
+
+class Box(TypedDict):
+    pageIndex: int
+    boundingBox: list[float]
+    textPiece: str
+
+
+class Match(TypedDict):
+    matchedText: str
+    boxes: list[Box]
+
+
+class QueryResult(TypedDict):
+    matches: list[Match]
+
+
+class TextBoxesResult(TypedDict):
+    textBoxes: list[QueryResult]
+
+
+class Redaction(TypedDict):
+    pageIndex: int
+    boundingBox: BoundingBox
+
+
+def search_result_to_redactions(search_result: TextBoxesResult) -> list[Redaction]:
     """Collect the boxes of a text-bounding-boxes result into Redact's `redactions`.
 
     Boxes are nested as textBoxes[].matches[].boxes[] (one entry per query, then one
@@ -56,19 +82,17 @@ def search_result_to_redactions(search_response: dict[str, Any]) -> list[dict[st
     cover parts of the match. Identical boxes, which only occur when two keywords
     match the same text, are sent once.
     """
-    search_result = search_response.get('result', search_response)
-    seen: set[tuple[int, tuple[float, ...]]] = set()
-    redactions: list[dict[str, Any]] = []
+    seen: set[tuple[int, BoundingBox]] = set()
+    redactions: list[Redaction] = []
     for query_result in search_result['textBoxes']:
         for match in query_result['matches']:
             for box in match['boxes']:
-                key = (box['pageIndex'], tuple(box['boundingBox']))
+                x, y, width, height = box['boundingBox']
+                key = (box['pageIndex'], (x, y, width, height))
                 if key in seen:
                     continue
                 seen.add(key)
-                redactions.append(
-                    {'pageIndex': box['pageIndex'], 'boundingBox': box['boundingBox']}
-                )
+                redactions.append({'pageIndex': key[0], 'boundingBox': key[1]})
     return redactions
 
 
@@ -100,7 +124,7 @@ def main(
             bbox_data = client.find_text_boxes(input_pdf, keywords)
 
             # Step 2: Collect the matches' boxes into redaction coordinates
-            redactions = search_result_to_redactions(bbox_data)
+            redactions = search_result_to_redactions(bbox_data['result'])
 
             if not redactions:
                 print('ℹ️  No keyword matches found - copying original file')  # noqa: RUF001
